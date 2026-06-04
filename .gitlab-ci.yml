@@ -1,0 +1,28 @@
+stages:
+  - install
+  - lint
+  - build
+
+image: node:22
+
+cache:
+  paths:
+    - node_modules/
+
+install:
+  stage: install
+  script:
+    - npm ci
+
+lint:
+  stage: lint
+  script:
+    - npm ci
+    - npm run lint
+    - npm tsx --noEmit
+
+build:
+  stage: build
+  script:
+    - npm ci
+    - npm run build
