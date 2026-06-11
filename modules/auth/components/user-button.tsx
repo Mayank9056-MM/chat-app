@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, LogOut, Settings, UserIcon } from "lucide-react";
+import { UserButtonProps } from "../types";
 
 export default function UserButton({
   user,
@@ -21,7 +22,7 @@ export default function UserButton({
   size = "md",
   showEmail = true,
   showMemberSince = true,
-}) {
+}: UserButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function UserButton({
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push("signi-in");
+          router.push("sign-in");
         },
       },
     });
