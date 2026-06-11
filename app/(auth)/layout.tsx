@@ -1,6 +1,8 @@
+import { requireUnAuth } from '@/modules/auth/actions'
 import React from 'react'
 
-const authLayout = ({children}: {children: React.ReactNode}) => {
+const AuthLayout = async({children}: {children: React.ReactNode}) => {
+  await requireUnAuth();
   return (
     <div> 
         {children}
@@ -8,4 +10,4 @@ const authLayout = ({children}: {children: React.ReactNode}) => {
   )
 }
 
-export default authLayout
+export default AuthLayout
