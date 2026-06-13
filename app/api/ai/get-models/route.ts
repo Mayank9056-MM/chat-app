@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const response = await fetch("https://api.openai.com/v1/models", {
+
+    const response = await fetch("https://openrouter.ai/api/v1/models", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${config.OPENROUTER_API_KEY}`,
