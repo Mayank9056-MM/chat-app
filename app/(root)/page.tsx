@@ -1,9 +1,15 @@
+import { currentUser } from "@/modules/auth/actions"
+import { User } from "@/modules/auth/types";
+import ChatMessageView from "@/modules/chat/components/chat-view/chat-message-view";
+
 const Home = async() => {
 
+  const user = await currentUser() as User;
+
   return (
-    <div className="flex items-center flex-col flex-1 justify-center bg-zinc-50 font-sans dark:bg-black">
-      <h1>Hell&apos;o</h1>
-    </div>
+   <>
+     <ChatMessageView user={user} />
+   </>
   )
 }
 
