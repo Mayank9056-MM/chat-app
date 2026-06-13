@@ -23,6 +23,7 @@ export const currentUser = async () => {
       email: true,
       name: true,
       image: true,
+      emailVerified: true,
       createdAt: true,
       updatedAt: true,
     },
