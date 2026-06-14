@@ -69,6 +69,13 @@ export async function createChatWithMessage({
 
     revalidatePath("/", "page");
 
+    if (!chat) {
+      return {
+        success: false,
+        message: "Failed to create chat",
+      };
+    }
+
     return {
       success: true,
       data: chat,

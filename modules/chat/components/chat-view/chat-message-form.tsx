@@ -18,7 +18,7 @@ type ChatMessageFormProps = {
 
 const ChatMessageForm = ({
   initialMessage,
-  // onMessageChange,
+  onMessageChange,
 }: ChatMessageFormProps) => {
   const { data, isPending } = useAIModels();
 
@@ -28,31 +28,33 @@ const ChatMessageForm = ({
     models?.[0]?.id,
   );
 
-  console.log(selectedModel, "selected model from chat message form");
-
-  const [message, setMessage] = useState(initialMessage || "");
+  const [message, setMessage] = useState("");
   const { mutateAsync, isPending: isChatPending } = useCreateChat();
 
-  // useEffect(() => {
-  //   if (initialMessage) {
-  //     setMessage(initialMessage);
-  //     onMessageChange?.();
-  //   }
-  // }, [initialMessage, onMessageChange]);
-
-  const submitMessage = async () => {
-    try {
-      await mutateAsync({ content: message, model: selectedModel as string });
-      toast.success("Message sent successfully");
-    } catch (error) {
-      console.error(error);
+  useEffect(() => {
+    if (!selectedModel && models?.length) {
+      setSelectedModel(models[0].id);
     }
-  };
+  }, [models, selectedModel]);
+
+  useEffect(() => {
+    if (initialMessage) {
+      setMessage(initialMessage);
+      onMessageChange?.();
+    }
+  }, [initialMessage, onMessageChange]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
       e.preventDefault();
-      await submitMessage();
+
+      if (!selectedModel) {
+        toast.error("Please select a model");
+        return;
+      }
+
+      await mutateAsync({ content: message, model: selectedModel as string });
+      toast.success("Message sent successfully");
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
@@ -76,7 +78,7 @@ const ChatMessageForm = ({
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                submitMessage();
+                handleSubmit(e);
               }
             }}
           />
@@ -101,7 +103,7 @@ const ChatMessageForm = ({
             </div>
             <Button
               type="submit"
-              disabled={!message.trim() || isChatPending}
+              disabled={!message.trim() || isChatPending || !selectedModel}
               size="sm"
               variant={message.trim() ? "default" : "ghost"}
               className="h-8 w-8 p-0 rounded-full "
