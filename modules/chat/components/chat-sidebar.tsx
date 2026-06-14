@@ -13,7 +13,7 @@ type ChatSidebarProps = {
   user: User;
 };
 
-const ChatSidebar = ({user}: ChatSidebarProps) => {
+const ChatSidebar = ({ user }: ChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
@@ -41,13 +41,14 @@ const ChatSidebar = ({user}: ChatSidebarProps) => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
 
-          {
-            searchQuery && (
-                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                    X
-                </button>
-            )
-          }
+          {searchQuery && (
+            <button
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground hover:cursor-pointer"
+              onClick={() => setSearchQuery("")}
+            >
+              X
+            </button>
+          )}
         </div>
       </div>
 
@@ -59,7 +60,9 @@ const ChatSidebar = ({user}: ChatSidebarProps) => {
 
       <div className="p-4 flex items-center gap-3 border-t border-sidebar-border">
         <UserButton user={user} />
-        <span className="flex-1 text-sm text-sidebar-foreground truncate">{user?.email}</span>
+        <span className="flex-1 text-sm text-sidebar-foreground truncate">
+          {user?.email}
+        </span>
       </div>
     </div>
   );

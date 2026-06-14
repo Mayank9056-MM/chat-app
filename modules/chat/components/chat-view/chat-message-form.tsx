@@ -18,7 +18,7 @@ type ChatMessageFormProps = {
 
 const ChatMessageForm = ({
   initialMessage,
-  onMessageChange,
+  // onMessageChange,
 }: ChatMessageFormProps) => {
   const { data, isPending } = useAIModels();
 
@@ -30,16 +30,15 @@ const ChatMessageForm = ({
 
   console.log(selectedModel, "selected model from chat message form");
 
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage || "");
   const { mutateAsync, isPending: isChatPending } = useCreateChat();
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => {
-    if (initialMessage) {
-      setMessage(initialMessage);
-      onMessageChange?.();
-    }
-  }, [initialMessage, onMessageChange]);
+  // useEffect(() => {
+  //   if (initialMessage) {
+  //     setMessage(initialMessage);
+  //     onMessageChange?.();
+  //   }
+  // }, [initialMessage, onMessageChange]);
 
   const submitMessage = async () => {
     try {
