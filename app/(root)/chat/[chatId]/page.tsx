@@ -1,9 +1,14 @@
-import React from 'react'
+import MessageViewWithFrom from "@/modules/messages/messsage-view-from";
+import React from "react";
 
-const ChatIdPage = () => {
-  return (
-    <div>ChatIdPage</div>
-  )
-}
+const ChatIdPage = async ({
+  params,
+}: {
+  params: Promise<{ chatId: string }>;
+}) => {
+  const { chatId } = await params;
 
-export default ChatIdPage
+  return <MessageViewWithFrom chatId={chatId} />;
+};
+
+export default ChatIdPage;
