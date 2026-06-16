@@ -1,4 +1,4 @@
-import MessageViewWithFrom from "@/modules/messages/messsage-view-from";
+import MessageViewWithForm from "@/modules/messages/messsage-view-form";
 import React from "react";
 
 const ChatIdPage = async ({
@@ -8,7 +8,7 @@ const ChatIdPage = async ({
 }) => {
   const { chatId } = await params;
 
-  return <MessageViewWithFrom chatId={chatId} />;
+  return <MessageViewWithForm chatId={chatId} />;
 };
 
 export default ChatIdPage;
