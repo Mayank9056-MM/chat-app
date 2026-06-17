@@ -1,35 +1,31 @@
 "use client";
 
-import { User } from '@/modules/auth/types'
-import React, { useState } from 'react'
-import ChatWelcomeTabs from './chat-welcome-tabs';
-import ChatMessageForm from './chat-message-form';
+import { User } from "@/modules/auth/types";
+import React, { useState } from "react";
+import ChatWelcomeTabs from "./chat-welcome-tabs";
+import ChatMessageForm from "./chat-message-form";
 
-const ChatMessageView = ({user}: {user: User}) => {
+type ChatMessageViewProps = {
+  user: User | null;
+};
 
-    const [selectedMessage, setSelectedMessage] = useState("")
+const ChatMessageView = ({user}: ChatMessageViewProps) => {
+  const [message, setMessage] = useState("");
 
-    const handleMessageSelect = (message: string) => {
-        setSelectedMessage(message);
-    };
-
-    const handleMessageChange = () => {
-        setSelectedMessage("");
-    }
+  const handleMessageSelect = (msg: string) => {
+    setMessage(msg);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen space-y-10">
-        <ChatWelcomeTabs
-        userName={user.name}
+      <ChatWelcomeTabs
+        userName={user?.name ?? "User"}
         onMessageSelect={handleMessageSelect}
-        />
+      />
 
-        <ChatMessageForm
-        initialMessage={selectedMessage}
-        onMessageChange={handleMessageChange}
-        />
+      <ChatMessageForm message={message} setMessage={setMessage} />
     </div>
-  )
-}
+  );
+};
 
-export default ChatMessageView
+export default ChatMessageView;

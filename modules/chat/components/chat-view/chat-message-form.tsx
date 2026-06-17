@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAIModels } from "../../hooks/use-ai-models";
 import { Send } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
@@ -9,59 +9,51 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ModelSelector } from "./model-selector";
 import { useCreateChat } from "../../hooks/use-chats";
-import { AIModel } from "@/types/ai-model";
 
 type ChatMessageFormProps = {
-  initialMessage: string;
-  onMessageChange: () => void;
+  message: string;
+  setMessage: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const ChatMessageForm = ({
-  initialMessage,
-  onMessageChange,
-}: ChatMessageFormProps) => {
+const ChatMessageForm = ({ message, setMessage }: ChatMessageFormProps) => {
   const { data, isPending } = useAIModels();
 
-  const models: AIModel[] | undefined = data?.models;
+  const models = data?.models ?? [];
 
-  const [selectedModel, setSelectedModel] = useState<string | undefined>(
-    models?.[0]?.id,
-  );
+  const [selectedModel, setSelectedModel] = useState<string>();
 
-  const [message, setMessage] = useState("");
+  const activeModel = selectedModel ?? models[0]?.id;
+
   const { mutateAsync, isPending: isChatPending } = useCreateChat();
 
-  useEffect(() => {
-    if (!selectedModel && models?.length) {
-      setSelectedModel(models[0].id);
+  const submitMessage = async () => {
+    if (!selectedModel) {
+      toast.error("Please select a model");
+      return;
     }
-  }, [models, selectedModel]);
 
-  useEffect(() => {
-    if (initialMessage) {
-      setMessage(initialMessage);
-      onMessageChange?.();
-    }
-  }, [initialMessage, onMessageChange]);
+    await mutateAsync({
+      content: message,
+      model: activeModel,
+    });
+
+    setMessage("");
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
       e.preventDefault();
-
-      if (!selectedModel) {
-        toast.error("Please select a model");
-        return;
-      }
-
-      await mutateAsync({ content: message, model: selectedModel as string });
-      toast.success("Message sent successfully");
+      await submitMessage();
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
-    } finally {
-      setMessage("");
     }
   };
+
+  if (!activeModel) {
+    toast.error("Please select a model");
+    return;
+  }
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-6">
@@ -75,10 +67,10 @@ const ChatMessageForm = ({
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your mesage here..."
             className="min-h-[60px] max-h-[200px] resize-none border-0 bg-transparent px-4 py-3 text-base focus-visible:ring-0 focus-visible:ring-offset-0 "
-            onKeyDown={(e) => {
+            onKeyDown={async (e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSubmit(e);
+                await submitMessage();
               }
             }}
           />
