@@ -4,17 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import UserButton from "@/modules/auth/components/user-button";
 import { User } from "@/modules/auth/types";
-import {
-  EllipsisIcon,
-  PlusIcon,
-  SearchCheck,
-  SearchIcon,
-  Trash,
-} from "lucide-react";
+import { EllipsisIcon, PlusIcon, SearchIcon, Trash } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Chats } from "../types";
+import { Chat, Chats } from "../types";
 import { usePathname } from "next/navigation";
 import { isToday, isWithinInterval, isYesterday, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -32,23 +26,53 @@ type ChatSidebarProps = {
   user: User;
 };
 
+type ChatGroupProps = {
+  label: string;
+  chats: Chats;
+  activeChatId: string | null;
+  onDelete: (e: React.MouseEvent, chatId: string) => void;
+};
+
+type ChatItemProps = {
+  chat: Chat;
+  isActive: boolean;
+  onDelete: (e: React.MouseEvent, chatId: string) => void;
+};
+
+type ChatGroupKey =
+  | "today"
+  | "yesterday"
+  | "lastWeek"
+  | "older";
+
 function groupChatsByDate(chats: Chats) {
-  const groups = { today: [], yesterday: [], lastWeek: [], older: [] };
+  const groups: Record<"today" | "yesterday" | "lastWeek" | "older", Chat[]> = {
+    today: [],
+    yesterday: [],
+    lastWeek: [],
+    older: [],
+  };
 
   const now = new Date();
 
-  chats?.forEach((chat) => {
+  chats?.forEach((chat: Chat) => {
     const date = new Date(chat.createdAt);
     if (isToday(date)) groups.today.push(chat);
     else if (isYesterday(date)) groups.yesterday.push(chat);
     else if (isWithinInterval(date, { start: subDays(now, 7), end: now }))
       groups.lastWeek.push(chat);
+    else {
+      groups.older.push(chat);
+    }
   });
 
   return groups;
 }
 
-const DATE_GROUPS = [
+const DATE_GROUPS: {
+  key: ChatGroupKey;
+  label: string;
+}[] = [
   {
     key: "today",
     label: "Today",
@@ -67,7 +91,7 @@ const DATE_GROUPS = [
   },
 ];
 
-function ChatItem({ chat, isActive, onDelete }) {
+function ChatItem({ chat, isActive, onDelete }: ChatItemProps) {
   return (
     <Link
       href={`/chat/${chat.id}`}
@@ -103,8 +127,8 @@ function ChatItem({ chat, isActive, onDelete }) {
   );
 }
 
-function ChatGroup({ label, chats, activeChatId, onDelete }) {
-  if (chats.length === 0) return null;
+function ChatGroup({ label, chats, activeChatId, onDelete }: ChatGroupProps) {
+  if (chats?.length === 0) return null;
 
   return (
     <div className="mb-4">
@@ -130,12 +154,12 @@ const ChatSidebar = ({ user }: ChatSidebarProps) => {
   const activeChatId = pathName?.startsWith("/chat/")
     ? pathName.split("/")[2]
     : null;
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [selectedChatId, setSelectedChatId] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data, isPending } = useGetChats();
 
-  const chats = data?.data;
+  const chats = data?.data ?? [];
 
   const filteredChats = useMemo(() => {
     if (!searchQuery) return chats;
@@ -144,9 +168,9 @@ const ChatSidebar = ({ user }: ChatSidebarProps) => {
 
     return chats.filter(
       (chat) =>
-        chat.title?.toLowerCase().includes(query) ||
-        chat.messages?.some((msg) =>
-          msg.content?.toLowerCase().includes(query),
+        chat.title.toLowerCase().includes(query) ||
+        chat.messages.some((msg) =>
+          msg.content.toLowerCase().includes(query),
         ),
     );
   }, [searchQuery, chats]);

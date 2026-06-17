@@ -4,7 +4,17 @@ import { useDeleteChat } from "@/modules/chat/hooks/use-chats";
 import Modal from "./ui/modal";
 import { toast } from "sonner";
 
-const DeleteChatModal = ({ isModalOpen, setIsModalOpen, chatId }) => {
+interface DeleteChatModalProps {
+  isModalOpen: boolean;
+  setIsModalOpen: (isOpen: boolean) => void;
+  chatId: string;
+}
+
+const DeleteChatModal = ({
+  isModalOpen,
+  setIsModalOpen,
+  chatId,
+}: DeleteChatModalProps) => {
   const { mutateAsync, isPending } = useDeleteChat(chatId);
 
   const handleDelete = async () => {
@@ -26,6 +36,7 @@ const DeleteChatModal = ({ isModalOpen, setIsModalOpen, chatId }) => {
       onSubmit={handleDelete}
       submitText={isPending ? "Deleting..." : "Delete"}
       submitVariant="destructive"
+      size={""}
     >
       <p className="text-sm text-zinc-500">
         Once deleted, all requests and data in this chat will be permanently

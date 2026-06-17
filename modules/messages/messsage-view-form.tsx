@@ -10,7 +10,6 @@ import { useChat } from "@ai-sdk/react";
 import {
   PromptInput,
   PromptInputBody,
-  PromptInputButton,
   PromptInputFooter,
   PromptInputMessage,
   PromptInputSubmit,
@@ -18,7 +17,6 @@ import {
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
 import { ModelSelector } from "../chat/components/chat-view/model-selector";
-import { RotateCcwIcon, StopCircleIcon } from "lucide-react";
 import {
   Conversation,
   ConversationContent,
@@ -42,20 +40,21 @@ type DBMessage = {
   content: string;
   messageRole: "USER" | "ASSISTANT";
   createdAt: string | Date;
-}
+};
 
 type MessagePartShape = {
   type: string;
   text?: string;
   [key: string]: unknown;
-}
+};
 
-function parseMessageToUI(msg: {
-  id: string;
-  messageRole: string;
-  content: string;
-  createdAt: Date;
-}) {
+function parseMessageToUI(msg: DBMessage) {
+
+   const role: UIMessage["role"] =
+    msg.messageRole === "USER"
+      ? "user"
+      : "assistant";
+
   const basePart = {
     type: "text",
     text: msg.content,
@@ -63,16 +62,17 @@ function parseMessageToUI(msg: {
 
   try {
     const parts = JSON.parse(msg.content);
+
     return {
       id: msg.id,
-      role: msg.messageRole.toLowerCase(),
+      role,
       parts: Array.isArray(parts) ? parts : [basePart],
       createdAt: msg.createdAt,
     };
   } catch {
     return {
       id: msg.id,
-      role: msg.messageRole.toLowerCase(),
+      role,
       parts: [basePart],
       createdAt: msg.createdAt,
     };
@@ -171,14 +171,14 @@ const ChatView = ({
 }: {
   chatId: string;
   initialMessages: UIMessage[];
-  initalModel: string | null;
+  initalModel: string | undefined;
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const shouldAutoTrigger = searchParams.get("autoTrigger") === "true";
   const hasAutoTriggered = useRef(false);
 
-  const [selectedModel, setSelectedmodel] = useState<string | null>(
+  const [selectedModel, setSelectedmodel] = useState<string | undefined>(
     initalModel,
   );
 
@@ -249,7 +249,7 @@ const ChatView = ({
       return;
     }
 
-    if (isBusy) return;
+    if (!isBuzy) return;
 
     try {
       await sendMessage(
