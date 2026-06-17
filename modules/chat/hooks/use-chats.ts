@@ -50,7 +50,6 @@ export const useDeleteChat = (chatId: string) => {
     mutationFn: () => deleteChat(chatId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chats"] });
-      router.push("/");
     },
     onError: (err) => {
       console.error("Error deleting chat:", err);

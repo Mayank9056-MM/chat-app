@@ -10,11 +10,9 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
 
   const user: User = session.user;
 
-  const { data: chats } = await getAllChats();
-
   return (
     <div className="flex h-screen overflow-hidden">
-      <ChatSidebar user={user} chats={chats} />
+      <ChatSidebar user={user} />
       <main className="flex-1 overflow-hidden">
         <Header />
         {children}
