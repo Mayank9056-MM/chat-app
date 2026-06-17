@@ -24,10 +24,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import DeleteChatModal from "@/components/delete-chat-model";
+import { useGetChats } from "../hooks/use-chats";
+import { Spinner } from "@/components/ui/spinner";
 
 type ChatSidebarProps = {
   user: User;
-  chats: Chats;
 };
 
 function groupChatsByDate(chats: Chats) {
@@ -35,7 +37,7 @@ function groupChatsByDate(chats: Chats) {
 
   const now = new Date();
 
-  chats.forEach((chat) => {
+  chats?.forEach((chat) => {
     const date = new Date(chat.createdAt);
     if (isToday(date)) groups.today.push(chat);
     else if (isYesterday(date)) groups.yesterday.push(chat);
@@ -121,7 +123,7 @@ function ChatGroup({ label, chats, activeChatId, onDelete }) {
   );
 }
 
-const ChatSidebar = ({ user, chats }: ChatSidebarProps) => {
+const ChatSidebar = ({ user }: ChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const pathName = usePathname();
@@ -129,7 +131,11 @@ const ChatSidebar = ({ user, chats }: ChatSidebarProps) => {
     ? pathName.split("/")[2]
     : null;
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
-  const [isModalOpen,setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { data, isPending } = useGetChats();
+
+  const chats = data?.data;
 
   const filteredChats = useMemo(() => {
     if (!searchQuery) return chats;
@@ -145,8 +151,10 @@ const ChatSidebar = ({ user, chats }: ChatSidebarProps) => {
     );
   }, [searchQuery, chats]);
 
-  const groupedChats =
-    useMemo(() => groupChatsByDate(filteredChats), [filteredChats]);
+  const groupedChats = useMemo(
+    () => groupChatsByDate(filteredChats),
+    [filteredChats],
+  );
 
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.preventDefault();
@@ -155,6 +163,14 @@ const ChatSidebar = ({ user, chats }: ChatSidebarProps) => {
     setSelectedChatId(chatId);
     setIsModalOpen(true);
   };
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full w-64 flex-col border-r border-border bg-sidebar">
@@ -218,6 +234,12 @@ const ChatSidebar = ({ user, chats }: ChatSidebarProps) => {
           {user?.email}
         </span>
       </div>
+
+      <DeleteChatModal
+        chatId={selectedChatId}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
     </div>
   );
 };
