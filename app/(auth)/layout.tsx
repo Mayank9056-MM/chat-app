@@ -1,7 +1,9 @@
+import { config } from '@/config/config';
 import { requireUnAuth } from '@/modules/auth/actions'
 import React from 'react'
 
 const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
+
   await requireUnAuth();
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-zinc-950 flex items-center justify-center">
