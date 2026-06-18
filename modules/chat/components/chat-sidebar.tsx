@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import UserButton from "@/modules/auth/components/user-button";
 import { User } from "@/modules/auth/types";
-import { EllipsisIcon, PlusIcon, SearchIcon, Trash } from "lucide-react";
+import { EllipsisIcon, PlusIcon, SearchIcon, Trash, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -22,73 +22,41 @@ import DeleteChatModal from "@/components/delete-chat-model";
 import { useGetChats } from "../hooks/use-chats";
 import { Spinner } from "@/components/ui/spinner";
 
-type ChatSidebarProps = {
-  user: User;
-};
-
+type ChatSidebarProps = { user: User };
 type ChatGroupProps = {
   label: string;
   chats: Chats;
   activeChatId: string | null;
   onDelete: (e: React.MouseEvent, chatId: string) => void;
 };
-
 type ChatItemProps = {
   chat: Chat;
   isActive: boolean;
   onDelete: (e: React.MouseEvent, chatId: string) => void;
 };
-
-type ChatGroupKey =
-  | "today"
-  | "yesterday"
-  | "lastWeek"
-  | "older";
+type ChatGroupKey = "today" | "yesterday" | "lastWeek" | "older";
 
 function groupChatsByDate(chats: Chats) {
-  const groups: Record<"today" | "yesterday" | "lastWeek" | "older", Chat[]> = {
-    today: [],
-    yesterday: [],
-    lastWeek: [],
-    older: [],
+  const groups: Record<ChatGroupKey, Chat[]> = {
+    today: [], yesterday: [], lastWeek: [], older: [],
   };
-
   const now = new Date();
-
   chats?.forEach((chat: Chat) => {
     const date = new Date(chat.createdAt);
     if (isToday(date)) groups.today.push(chat);
     else if (isYesterday(date)) groups.yesterday.push(chat);
     else if (isWithinInterval(date, { start: subDays(now, 7), end: now }))
       groups.lastWeek.push(chat);
-    else {
-      groups.older.push(chat);
-    }
+    else groups.older.push(chat);
   });
-
   return groups;
 }
 
-const DATE_GROUPS: {
-  key: ChatGroupKey;
-  label: string;
-}[] = [
-  {
-    key: "today",
-    label: "Today",
-  },
-  {
-    key: "yesterday",
-    label: "Yesterday",
-  },
-  {
-    key: "lastWeek",
-    label: "Last 7 Days",
-  },
-  {
-    key: "older",
-    label: "Older",
-  },
+const DATE_GROUPS: { key: ChatGroupKey; label: string }[] = [
+  { key: "today", label: "Today" },
+  { key: "yesterday", label: "Yesterday" },
+  { key: "lastWeek", label: "Last 7 Days" },
+  { key: "older", label: "Older" },
 ];
 
 function ChatItem({ chat, isActive, onDelete }: ChatItemProps) {
@@ -96,30 +64,38 @@ function ChatItem({ chat, isActive, onDelete }: ChatItemProps) {
     <Link
       href={`/chat/${chat.id}`}
       className={cn(
-        "flex items-center justify-between rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors",
-        isActive && "bg-sidebar-accent",
+        "group flex items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-all duration-150",
+        isActive
+          ? "bg-white/[0.08] text-white"
+          : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200",
       )}
     >
-      <span className="truncate flex-1">{chat.title}</span>
+      <span className="truncate flex-1 leading-snug">{chat.title}</span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant={"ghost"}
+            variant="ghost"
             size="icon"
-            className="h-6 w-6 shrink-0 hover:bg-sidebar-accent-foreground/10"
+            className={cn(
+              "h-6 w-6 shrink-0 rounded-md transition-all duration-150",
+              "opacity-0 group-hover:opacity-100",
+              "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.08]",
+            )}
             onClick={(e) => e.preventDefault()}
           >
-            <EllipsisIcon className="h-4 w-4" />
+            <EllipsisIcon className="h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
-
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="bg-zinc-900 border-white/[0.08] text-zinc-200 shadow-xl shadow-black/40"
+        >
           <DropdownMenuItem
-            className="text-red-500 cursor-pointer"
+            className="text-red-400 cursor-pointer hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-300 gap-2"
             onClick={(e) => onDelete(e, chat.id)}
           >
-            <Trash className="h-4 w-4 mr-2" />
-            Delete
+            <Trash className="h-3.5 w-3.5" />
+            Delete chat
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -129,27 +105,27 @@ function ChatItem({ chat, isActive, onDelete }: ChatItemProps) {
 
 function ChatGroup({ label, chats, activeChatId, onDelete }: ChatGroupProps) {
   if (chats?.length === 0) return null;
-
   return (
-    <div className="mb-4">
-      <div className="mbl-2 px-2 text-xs font-semibold text-muted-foreground">
+    <div className="mb-5">
+      <div className="mb-1 px-2.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
         {label}
       </div>
-      {chats.map((chat) => (
-        <ChatItem
-          key={chat.id}
-          chat={chat}
-          isActive={chat.id === activeChatId}
-          onDelete={onDelete}
-        />
-      ))}
+      <div className="space-y-0.5">
+        {chats.map((chat) => (
+          <ChatItem
+            key={chat.id}
+            chat={chat}
+            isActive={chat.id === activeChatId}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
 const ChatSidebar = ({ user }: ChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-
   const pathName = usePathname();
   const activeChatId = pathName?.startsWith("/chat/")
     ? pathName.split("/")[2]
@@ -158,20 +134,15 @@ const ChatSidebar = ({ user }: ChatSidebarProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data, isPending } = useGetChats();
-
   const chats = data?.data ?? [];
 
   const filteredChats = useMemo(() => {
     if (!searchQuery) return chats;
-
     const query = searchQuery.toLowerCase();
-
     return chats.filter(
       (chat) =>
         chat.title.toLowerCase().includes(query) ||
-        chat.messages.some((msg) =>
-          msg.content.toLowerCase().includes(query),
-        ),
+        chat.messages.some((msg) => msg.content.toLowerCase().includes(query)),
     );
   }, [searchQuery, chats]);
 
@@ -183,59 +154,79 @@ const ChatSidebar = ({ user }: ChatSidebarProps) => {
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.preventDefault();
     e.stopPropagation();
-
     setSelectedChatId(chatId);
     setIsModalOpen(true);
   };
 
-  if (isPending) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Spinner />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-full w-64 flex-col border-r border-border bg-sidebar">
-      <div className="flex items-center border-b border-sidebar-border px-4 py-3">
-        <Image src={"logo.svg"} alt="Logo" width={100} height={100} />
+    <div className="flex h-full w-60 flex-col bg-zinc-950 border-r border-white/[0.06]">
+
+      {/* Logo */}
+      <div className="flex items-center h-12 px-4 border-b border-white/[0.06] flex-shrink-0">
+        <Image src="/logo.svg" alt="Neuron" width={88} height={88} className="object-contain" />
       </div>
 
-      <div className="p-4">
-        <Button asChild className="w-full">
-          <Link href={"/"}>
-            <PlusIcon className="mr-2 h-4 w-4" />
-            New Chat
+      {/* New Chat */}
+      <div className="px-3 pt-3 pb-2 flex-shrink-0">
+        <Button
+          asChild
+          className="
+            w-full h-8 gap-2 text-xs font-medium rounded-lg
+            bg-white/[0.06] hover:bg-white/[0.10]
+            border border-white/[0.08] hover:border-white/[0.14]
+            text-zinc-300 hover:text-white
+            shadow-none transition-all duration-150
+          "
+          variant="ghost"
+        >
+          <Link href="/">
+            <PlusIcon className="h-3.5 w-3.5" />
+            New chat
           </Link>
         </Button>
       </div>
 
-      <div className="px-4 pb-4">
+      {/* Search */}
+      <div className="px-3 pb-3 flex-shrink-0">
         <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-600" />
           <Input
-            placeholder="Search your threads..."
-            className="pl-9 pr-8 bg-sidebar-accent border-sidebar-border"
+            placeholder="Search chats…"
+            className="
+              h-8 pl-8 pr-7 text-xs rounded-lg
+              bg-white/[0.04] border-white/[0.07]
+              text-zinc-300 placeholder:text-zinc-600
+              focus-visible:ring-1 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/30
+              transition-all duration-150
+            "
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-
           {searchQuery && (
             <button
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground hover:cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 transition-colors"
               onClick={() => setSearchQuery("")}
+              aria-label="Clear search"
             >
-              X
+              <X className="h-3 w-3" />
             </button>
           )}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2">
-        {filteredChats.length === 0 ? (
-          <div className="text-center text-sm text-muted-foreground py-8">
-            {searchQuery ? "No chats found" : "No chats yet"}
+      {/* Chat list */}
+      <div className="flex-1 overflow-y-auto px-2 pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/[0.06]">
+        {isPending ? (
+          <div className="flex items-center justify-center py-12">
+            <Spinner className="text-zinc-600" />
+          </div>
+        ) : filteredChats.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="text-zinc-700 text-xs leading-relaxed">
+              {searchQuery
+                ? `No results for "${searchQuery}"`
+                : "No chats yet. Start a new conversation."}
+            </div>
           </div>
         ) : (
           DATE_GROUPS.map((group) => (
@@ -250,13 +241,19 @@ const ChatSidebar = ({ user }: ChatSidebarProps) => {
         )}
       </div>
 
-      {/* Footer */}
-
-      <div className="p-4 flex items-center gap-3 border-t border-sidebar-border">
-        <UserButton user={user} />
-        <span className="flex-1 text-sm text-sidebar-foreground truncate">
-          {user?.email}
-        </span>
+      {/* User footer */}
+      <div className="flex-shrink-0 border-t border-white/[0.06] p-3">
+        <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-white/[0.05] transition-colors duration-150 cursor-pointer">
+          <UserButton user={user} />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-zinc-300 truncate leading-tight">
+              {user?.name}
+            </p>
+            <p className="text-[10px] text-zinc-600 truncate leading-tight">
+              {user?.email}
+            </p>
+          </div>
+        </div>
       </div>
 
       <DeleteChatModal
