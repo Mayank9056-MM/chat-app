@@ -8,7 +8,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://neuron-ai.app"),
+  metadataBase: new URL("https://chat-app-e478-psha64o3j-mayank9056-mms-projects.vercel.app"),
 
   title: {
     default: "Neuron — AI Workspace for Thinking, Research & Conversations",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://neuron-ai.app",
+    url: "https://chat-app-e478-psha64o3j-mayank9056-mms-projects.vercel.app",
     siteName: "Neuron",
     title: "Neuron — AI Workspace for Thinking, Research & Conversations",
     description:
@@ -87,7 +87,7 @@ export const metadata: Metadata = {
   },
 
   alternates: {
-    canonical: "https://neuron-ai.app",
+    canonical: "https://chat-app-e478-psha64o3j-mayank9056-mms-projects.vercel.app",
   },
 
   icons: {
