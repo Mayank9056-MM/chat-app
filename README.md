@@ -16,12 +16,9 @@ Neuron is an authenticated, multi-model AI chat application built on the Next.js
 
 ## Screenshots
 
-Screenshots are not committed yet. Add stable captures to `docs/images/` and replace this section with:
-
-```md
 ![Neuron welcome screen](docs/images/welcome.png)
 ![Neuron conversation](docs/images/conversation.png)
-```
+
 
 ## Tech stack
 
@@ -55,7 +52,7 @@ docker compose up -d postgres
 Create `.env.local`:
 
 ```dotenv
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/t3chat"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/neuron"
 GITHUB_CLIENT_ID="..."
 GITHUB_CLIENT_SECRET="..."
 GOOGLE_CLIENT_ID="..."
