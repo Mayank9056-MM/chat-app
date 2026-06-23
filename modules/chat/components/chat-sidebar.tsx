@@ -22,19 +22,29 @@ import DeleteChatModal from "@/components/delete-chat-model";
 import { useGetChats } from "../hooks/use-chats";
 import { Spinner } from "@/components/ui/spinner";
 
-type ChatSidebarProps = { user: User };
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type ChatSidebarProps = {
+  user: User;
+  /** Called when a nav item is clicked on mobile so the sheet can close. */
+  onNavigate?: () => void;
+};
 type ChatGroupProps = {
   label: string;
   chats: Chats;
   activeChatId: string | null;
   onDelete: (e: React.MouseEvent, chatId: string) => void;
+  onNavigate?: () => void;
 };
 type ChatItemProps = {
   chat: Chat;
   isActive: boolean;
   onDelete: (e: React.MouseEvent, chatId: string) => void;
+  onNavigate?: () => void;
 };
 type ChatGroupKey = "today" | "yesterday" | "lastWeek" | "older";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function groupChatsByDate(chats: Chats) {
   const groups: Record<ChatGroupKey, Chat[]> = {
@@ -59,18 +69,23 @@ const DATE_GROUPS: { key: ChatGroupKey; label: string }[] = [
   { key: "older", label: "Older" },
 ];
 
-function ChatItem({ chat, isActive, onDelete }: ChatItemProps) {
+// ─── ChatItem ─────────────────────────────────────────────────────────────────
+
+function ChatItem({ chat, isActive, onDelete, onNavigate }: ChatItemProps) {
   return (
     <Link
       href={`/chat/${chat.id}`}
+      onClick={onNavigate}
       className={cn(
-        "group flex items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-all duration-150",
+        "group flex items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-all duration-150 min-w-0",
         isActive
           ? "bg-white/[0.08] text-white"
           : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200",
       )}
     >
-      <span className="truncate flex-1 leading-snug">{chat.title}</span>
+      {/* min-w-0 + truncate prevent title from pushing the button off-screen */}
+      <span className="truncate flex-1 min-w-0 leading-snug pr-1">{chat.title}</span>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -78,10 +93,12 @@ function ChatItem({ chat, isActive, onDelete }: ChatItemProps) {
             size="icon"
             className={cn(
               "h-6 w-6 shrink-0 rounded-md transition-all duration-150",
-              "opacity-0 group-hover:opacity-100",
+              // Always visible on touch devices; hover-only on pointer devices
+              "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
               "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.08]",
             )}
             onClick={(e) => e.preventDefault()}
+            aria-label="Chat options"
           >
             <EllipsisIcon className="h-3.5 w-3.5" />
           </Button>
@@ -103,7 +120,9 @@ function ChatItem({ chat, isActive, onDelete }: ChatItemProps) {
   );
 }
 
-function ChatGroup({ label, chats, activeChatId, onDelete }: ChatGroupProps) {
+// ─── ChatGroup ────────────────────────────────────────────────────────────────
+
+function ChatGroup({ label, chats, activeChatId, onDelete, onNavigate }: ChatGroupProps) {
   if (chats?.length === 0) return null;
   return (
     <div className="mb-5">
@@ -117,6 +136,7 @@ function ChatGroup({ label, chats, activeChatId, onDelete }: ChatGroupProps) {
             chat={chat}
             isActive={chat.id === activeChatId}
             onDelete={onDelete}
+            onNavigate={onNavigate}
           />
         ))}
       </div>
@@ -124,7 +144,14 @@ function ChatGroup({ label, chats, activeChatId, onDelete }: ChatGroupProps) {
   );
 }
 
-const ChatSidebar = ({ user }: ChatSidebarProps) => {
+// ─── ChatSidebar ──────────────────────────────────────────────────────────────
+
+/**
+ * The sidebar renders as a purely visual panel — it is the *content* of the
+ * sidebar, whether that's a fixed <aside> on desktop or a Sheet on mobile.
+ * The Sheet wrapper lives in the Header so this component stays focused.
+ */
+const ChatSidebar = ({ user, onNavigate }: ChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const pathName = usePathname();
   const activeChatId = pathName?.startsWith("/chat/")
@@ -159,52 +186,67 @@ const ChatSidebar = ({ user }: ChatSidebarProps) => {
   };
 
   return (
-    <div className="flex h-full w-60 flex-col bg-zinc-950 border-r border-white/[0.06]">
+    /*
+      h-full fills whatever container places this (the <aside> on desktop,
+      or the SheetContent on mobile). flex-col ensures the footer stays
+      pinned at the bottom.
+    */
+    <div className="flex h-full w-full flex-col bg-zinc-950 border-r border-white/[0.06]">
 
-      {/* Logo */}
+      {/* ── Logo ── */}
       <div className="flex items-center h-12 px-4 border-b border-white/[0.06] flex-shrink-0">
-        <Image src="/logo.svg" alt="Neuron" width={88} height={88} className="object-contain" />
+        <Image
+          src="/logo.svg"
+          alt="Neuron"
+          width={88}
+          height={32}
+          className="object-contain"
+          priority
+        />
       </div>
 
-      {/* New Chat */}
+      {/* ── New Chat ── */}
       <div className="px-3 pt-3 pb-2 flex-shrink-0">
         <Button
           asChild
-          className="
-            w-full h-8 gap-2 text-xs font-medium rounded-lg
-            bg-white/[0.06] hover:bg-white/[0.10]
-            border border-white/[0.08] hover:border-white/[0.14]
-            text-zinc-300 hover:text-white
-            shadow-none transition-all duration-150
-          "
+          className={cn(
+            "w-full h-8 gap-2 text-xs font-medium rounded-lg",
+            "bg-white/[0.06] hover:bg-white/[0.10]",
+            "border border-white/[0.08] hover:border-white/[0.14]",
+            "text-zinc-300 hover:text-white",
+            "shadow-none transition-all duration-150",
+            // Improve touch target
+            "active:scale-[0.98]",
+          )}
           variant="ghost"
         >
-          <Link href="/">
+          <Link href="/" onClick={onNavigate}>
             <PlusIcon className="h-3.5 w-3.5" />
             New chat
           </Link>
         </Button>
       </div>
 
-      {/* Search */}
+      {/* ── Search ── */}
       <div className="px-3 pb-3 flex-shrink-0">
         <div className="relative">
-          <SearchIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-600" />
+          <SearchIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-600 pointer-events-none" />
           <Input
             placeholder="Search chats…"
-            className="
-              h-8 pl-8 pr-7 text-xs rounded-lg
-              bg-white/[0.04] border-white/[0.07]
-              text-zinc-300 placeholder:text-zinc-600
-              focus-visible:ring-1 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/30
-              transition-all duration-150
-            "
+            className={cn(
+              "h-8 pl-8 pr-7 text-xs rounded-lg",
+              "bg-white/[0.04] border-white/[0.07]",
+              "text-zinc-300 placeholder:text-zinc-600",
+              "focus-visible:ring-1 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/30",
+              "transition-all duration-150",
+            )}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Search chats"
           />
           {searchQuery && (
             <button
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 transition-colors"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 transition-colors p-0.5 rounded"
               onClick={() => setSearchQuery("")}
               aria-label="Clear search"
             >
@@ -214,19 +256,23 @@ const ChatSidebar = ({ user }: ChatSidebarProps) => {
         </div>
       </div>
 
-      {/* Chat list */}
-      <div className="flex-1 overflow-y-auto px-2 pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/[0.06]">
+      {/* ── Chat list ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/[0.06]">
         {isPending ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-12" role="status" aria-label="Loading chats">
             <Spinner className="text-zinc-600" />
           </div>
         ) : filteredChats.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <div className="text-zinc-700 text-xs leading-relaxed">
+            <div className="mb-2 text-zinc-700">
+              {/* Icon placeholder — keeps empty state from feeling sterile */}
+              <SearchIcon className="h-5 w-5 mx-auto opacity-40" />
+            </div>
+            <p className="text-zinc-600 text-xs leading-relaxed">
               {searchQuery
                 ? `No results for "${searchQuery}"`
                 : "No chats yet. Start a new conversation."}
-            </div>
+            </p>
           </div>
         ) : (
           DATE_GROUPS.map((group) => (
@@ -236,14 +282,15 @@ const ChatSidebar = ({ user }: ChatSidebarProps) => {
               chats={groupedChats[group.key]}
               activeChatId={activeChatId}
               onDelete={handleDelete}
+              onNavigate={onNavigate}
             />
           ))
         )}
       </div>
 
-      {/* User footer */}
+      {/* ── User footer ── */}
       <div className="flex-shrink-0 border-t border-white/[0.06] p-3">
-        <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-white/[0.05] transition-colors duration-150 cursor-pointer">
+        <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-white/[0.05] active:bg-white/[0.07] transition-colors duration-150 cursor-pointer min-w-0">
           <UserButton user={user} />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-zinc-300 truncate leading-tight">

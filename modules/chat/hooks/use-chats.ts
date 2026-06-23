@@ -44,7 +44,6 @@ export const useCreateChat = () => {
 
 export const useDeleteChat = (chatId: string) => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   return useMutation({
     mutationFn: () => deleteChat(chatId),
