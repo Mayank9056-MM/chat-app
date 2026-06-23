@@ -1,3 +1,5 @@
+// config/server.ts
+
 import {z} from "zod";
 
 const envSchema = z.object({
@@ -10,7 +12,7 @@ const envSchema = z.object({
 
     OPENROUTER_API_KEY: z.string().min(1),
     
-    NEXT_PUBLIC_APP_URL: z.string().min(1),
+    // NEXT_PUBLIC_APP_URL: z.string().min(1),
 })
 
 const safeConfig = envSchema.safeParse(process.env);
