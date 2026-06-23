@@ -1,4 +1,3 @@
-import { config } from '@/config/config';
 import { requireUnAuth } from '@/modules/auth/actions'
 import React from 'react'
 

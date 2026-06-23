@@ -8,7 +8,7 @@ import {
   type UIMessage,
 } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { config } from "@/config/config";
+import { config } from "@/config/server";
 import { NextRequest } from "next/server";
 
 const openRouter = createOpenRouter({
