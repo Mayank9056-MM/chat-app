@@ -34,14 +34,23 @@ const DeleteChatModal = ({
       isOpen={isModalOpen}
       onClose={() => setIsModalOpen(false)}
       onSubmit={handleDelete}
-      submitText={isPending ? "Deleting..." : "Delete"}
+      submitText={isPending ? "Deleting…" : "Delete"}
       submitVariant="destructive"
       size={""}
     >
-      <p className="text-sm text-zinc-500">
-        Once deleted, all requests and data in this chat will be permanently
-        deleted.
-      </p>
+      {/*
+        Slightly warmer tone than plain zinc — red-400/10 tint reinforces the
+        destructive nature without being alarming. The icon + text pairing gives
+        the warning more weight on small screens where the modal title may be
+        truncated.
+      */}
+      <div className="rounded-lg bg-red-500/[0.06] border border-red-500/[0.12] px-3.5 py-3">
+        <p className="text-sm text-zinc-400 leading-relaxed">
+          All messages and data in this chat will be{" "}
+          <span className="text-zinc-300 font-medium">permanently removed</span>{" "}
+          and cannot be recovered.
+        </p>
+      </div>
     </Modal>
   );
 };

@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { Check, ChevronDown, Info, Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -75,18 +76,21 @@ export function ModelSelector({
             variant="ghost"
             role="combobox"
             aria-expanded={open}
+            aria-haspopup="listbox"
             className={cn(
               "h-7 gap-1.5 px-2 rounded-lg text-xs font-medium",
               "bg-white/[0.04] hover:bg-white/[0.08]",
               "border border-white/[0.07] hover:border-white/[0.12]",
               "text-zinc-400 hover:text-zinc-200",
               "transition-all duration-150",
+              // Constrain width on narrow screens; icon + short name stays readable
+              "max-w-[180px] sm:max-w-none",
               open && "bg-white/[0.08] border-white/[0.12] text-zinc-200",
               className,
             )}
           >
             <Sparkles className="h-3 w-3 text-indigo-400 shrink-0" />
-            <span className="truncate max-w-[160px]">
+            <span className="truncate max-w-[120px] sm:max-w-[160px]">
               {selectedModel?.name ?? "Select model"}
             </span>
             <ChevronDown
@@ -98,30 +102,45 @@ export function ModelSelector({
           </Button>
         </PopoverTrigger>
 
+        {/*
+          On mobile (< sm) the popover takes nearly the full viewport width;
+          on desktop it's a fixed 420px panel.
+          align="start" keeps it left-anchored under the trigger.
+          We cap the list at 300px on mobile so it doesn't push off-screen.
+        */}
         <PopoverContent
-          className="w-[420px] p-0 bg-zinc-900 border-white/[0.08] shadow-2xl shadow-black/60 rounded-xl"
+          className={cn(
+            "w-[calc(100vw-2rem)] sm:w-[420px]",
+            "p-0 bg-zinc-900 border-white/[0.08]",
+            "shadow-2xl shadow-black/60 rounded-xl",
+          )}
           align="start"
+          // Keep the popover on-screen even on 320px viewports
+          avoidCollisions
+          collisionPadding={16}
         >
-          {/* Search */}
+          {/* ── Search ── */}
           <div className="p-2.5 border-b border-white/[0.06]">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600 pointer-events-none" />
               <Input
                 placeholder="Search models…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="
-                  h-8 pl-8 pr-7 text-xs rounded-lg
-                  bg-white/[0.04] border-white/[0.07]
-                  text-zinc-300 placeholder:text-zinc-600
-                  focus-visible:ring-1 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/30
-                "
+                className={cn(
+                  "h-8 pl-8 pr-7 text-xs rounded-lg",
+                  "bg-white/[0.04] border-white/[0.07]",
+                  "text-zinc-300 placeholder:text-zinc-600",
+                  "focus-visible:ring-1 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/30",
+                )}
                 autoFocus
+                aria-label="Search models"
               />
               {searchQuery && (
                 <button
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 transition-colors"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 transition-colors p-0.5 rounded"
                   onClick={() => setSearchQuery("")}
+                  aria-label="Clear search"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -129,9 +148,9 @@ export function ModelSelector({
             </div>
           </div>
 
-          <ScrollArea className="h-[360px]">
-            <div className="p-2">
-              {/* Section header */}
+          {/* ── Model list ── */}
+          <ScrollArea className="h-[300px] sm:h-[360px]">
+            <div className="p-2" role="listbox" aria-label="Available models">
               <div className="px-2 pb-1.5 pt-0.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
                 Available · {filteredModels?.length ?? 0}
               </div>
@@ -145,9 +164,11 @@ export function ModelSelector({
                   {filteredModels?.map((model) => (
                     <div
                       key={model.id}
+                      role="option"
+                      aria-selected={selectedModelId === model.id}
                       className={cn(
-                        "relative flex cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2.5 text-sm transition-colors duration-100",
-                        "hover:bg-white/[0.06]",
+                        "group relative flex cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2.5 text-sm transition-colors duration-100",
+                        "hover:bg-white/[0.06] active:bg-white/[0.08]",
                         selectedModelId === model.id
                           ? "bg-indigo-500/10 hover:bg-indigo-500/15"
                           : "",
@@ -158,7 +179,7 @@ export function ModelSelector({
                         setSearchQuery("");
                       }}
                     >
-                      {/* Check */}
+                      {/* Check mark */}
                       <div className="flex h-5 items-center mt-0.5 flex-shrink-0">
                         <Check
                           className={cn(
@@ -168,7 +189,7 @@ export function ModelSelector({
                         />
                       </div>
 
-                      {/* Content */}
+                      {/* Content — min-w-0 prevents long model names from overflowing */}
                       <div className="flex-1 min-w-0 space-y-0.5">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span
@@ -199,15 +220,20 @@ export function ModelSelector({
                         </div>
                       </div>
 
-                      {/* Info button */}
+                      {/* Info button — visible on hover/focus */}
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0 shrink-0 rounded-md text-zinc-700 hover:text-zinc-300 hover:bg-white/[0.08] opacity-0 group-hover:opacity-100 transition-all"
+                        className={cn(
+                          "h-6 w-6 p-0 shrink-0 rounded-md",
+                          "text-zinc-700 hover:text-zinc-300 hover:bg-white/[0.08]",
+                          "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
+                          "transition-all duration-150",
+                        )}
                         onClick={(e) => openModelDetails(model, e)}
+                        aria-label={`View details for ${model.name}`}
                       >
                         <Info className="h-3.5 w-3.5" />
-                        <span className="sr-only">View details</span>
                       </Button>
                     </div>
                   ))}
@@ -218,20 +244,27 @@ export function ModelSelector({
         </PopoverContent>
       </Popover>
 
-      {/* Model details dialog */}
+      {/* ── Model details dialog ── */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-lg bg-zinc-900 border-white/[0.08] text-zinc-200 shadow-2xl shadow-black/60">
+        <DialogContent
+          className={cn(
+            // Nearly full-width on mobile; capped at 512px on desktop
+            "w-[calc(100vw-2rem)] max-w-lg",
+            "bg-zinc-900 border-white/[0.08] text-zinc-200",
+            "shadow-2xl shadow-black/60",
+          )}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
-              <Sparkles className="h-4 w-4 text-indigo-400" />
-              {selectedForDetails?.name}
+              <Sparkles className="h-4 w-4 text-indigo-400 flex-shrink-0" />
+              <span className="truncate">{selectedForDetails?.name}</span>
             </DialogTitle>
             <DialogDescription className="text-zinc-500">
               Model capabilities and pricing
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="h-[420px] pr-4">
+          <ScrollArea className="h-[380px] sm:h-[420px] pr-4">
             {selectedForDetails && (
               <div className="space-y-5">
 
@@ -250,7 +283,7 @@ export function ModelSelector({
                   ].map((item) => (
                     <div key={item.label} className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-3 space-y-1">
                       <p className="text-[10px] text-zinc-600 uppercase tracking-wide">{item.label}</p>
-                      <p className="text-xs font-medium text-zinc-200 capitalize">{item.value}</p>
+                      <p className="text-xs font-medium text-zinc-200 capitalize break-words">{item.value}</p>
                     </div>
                   ))}
                 </div>
