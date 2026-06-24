@@ -249,7 +249,7 @@ const ChatView = ({
       return;
     }
 
-    if (!isBuzy) return;
+    if (isBuzy) return;
 
     try {
       await sendMessage(
