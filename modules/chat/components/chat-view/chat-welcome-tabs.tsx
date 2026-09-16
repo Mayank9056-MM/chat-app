@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { CHAT_TAB_MESSAGE } from "../../constant";
 import { Button } from "@/components/ui/button";
+import { NeuronMark } from "@/components/brand";
 
 type WelcomeTabsProps = {
   userName: string;
@@ -25,16 +26,13 @@ const ChatWelcomeTabs = ({
     <div className="w-full px-4 sm:px-6">
       <div className="w-full max-w-2xl mx-auto space-y-6 sm:space-y-8">
 
-        {/* ── Greeting ── */}
-        <div className="space-y-2">
-          {/*
-            Responsive heading scale:
-              mobile  → text-3xl  (≈ 30px)
-              tablet  → text-4xl  (≈ 36px)
-              desktop → text-5xl  (≈ 48px)
-            font-semibold keeps it authoritative without being heavy.
-            leading-tight prevents double-line awkwardness on narrow screens.
-          */}
+        {/* ── Brand Badge & Greeting ── */}
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-zinc-400">
+            <NeuronMark size={15} animated glow={false} />
+            <span className="font-medium text-zinc-300">Neuron Workspace</span>
+          </div>
+
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white leading-tight">
             Good to see you,{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">

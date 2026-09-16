@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import UserButton from "@/modules/auth/components/user-button";
 import { User } from "@/modules/auth/types";
 import { EllipsisIcon, PlusIcon, SearchIcon, Trash, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { NeuronLogo } from "@/components/brand";
 import { Chat, Chats } from "../types";
 import { usePathname } from "next/navigation";
 import { isToday, isWithinInterval, isYesterday, subDays } from "date-fns";
@@ -195,13 +195,12 @@ const ChatSidebar = ({ user, onNavigate }: ChatSidebarProps) => {
 
       {/* ── Logo ── */}
       <div className="flex items-center h-12 px-4 border-b border-white/[0.06] flex-shrink-0">
-        <Image
-          src="/logo.svg"
-          alt="Neuron"
-          width={88}
-          height={32}
-          className="object-contain"
-          priority
+        <NeuronLogo
+          variant="full"
+          size="sm"
+          href="/"
+          onClick={onNavigate}
+          animated
         />
       </div>
 

@@ -12,6 +12,7 @@ import {
 import { User } from "@/modules/auth/types";
 import ChatSidebar from "@/modules/chat/components/chat-sidebar";
 import { ModeToggle } from "./mode-toggle";
+import { NeuronLogo } from "@/components/brand";
 import { cn } from "@/lib/utils";
 
 type HeaderProps = {
@@ -45,6 +46,11 @@ const Header = ({ user }: HeaderProps) => {
             <Menu className="h-4 w-4" />
           </Button>
         )}
+
+        {/* Mobile brand presence */}
+        <div className="lg:hidden flex items-center">
+          <NeuronLogo variant="full" size="xs" href="/" />
+        </div>
 
         {/* Spacer — pushes ModeToggle to the right */}
         <div className="flex-1 min-w-0" />
