@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%" fill="none">
+  <defs>
+    <linearGradient id="neuron-mark-grad" x1="20" y1="100" x2="100" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="35%" stop-color="#6366F1"/>
+      <stop offset="70%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="neuron-pulse-grad" x1="24" y1="24" x2="96" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C084FC"/>
+      <stop offset="50%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#34D399"/>
+    </linearGradient>
+    <radialGradient id="neuron-aura" cx="60" cy="60" r="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.3"/>
+      <stop offset="60%" stop-color="#6366F1" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="neuron-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Ambient Core Aura -->
+  <circle cx="60" cy="60" r="36" fill="url(#neuron-aura)"/>
+
+  <!-- Background Synaptic Trace -->
+  <path d="M28 92 L28 28 L92 92 L92 28" stroke="rgba(255,255,255,0.06)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="28" y1="92" x2="92" y2="28" stroke="url(#neuron-pulse-grad)" stroke-width="2" stroke-dasharray="3 4" opacity="0.5"/>
+
+  <!-- Main Neural Conduits forming 'N' -->
+  <path d="M28 92 V28" stroke="url(#neuron-mark-grad)" stroke-width="8.5" stroke-linecap="round"/>
+  <path d="M28 28 L92 92" stroke="url(#neuron-mark-grad)" stroke-width="8.5" stroke-linecap="round"/>
+  <path d="M92 92 V28" stroke="url(#neuron-mark-grad)" stroke-width="8.5" stroke-linecap="round"/>
+
+  <!-- Inner High-Energy Core Rails -->
+  <path d="M28 84 V36" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" opacity="0.85"/>
+  <path d="M34 34 L86 86" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" opacity="0.95"/>
+  <path d="M92 84 V36" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" opacity="0.85"/>
+
+  <!-- Synaptic Ranvier Nodes -->
+  <circle cx="28" cy="28" r="7.5" fill="#8B5CF6" filter="url(#neuron-glow)"/>
+  <circle cx="28" cy="28" r="3.5" fill="#FFFFFF"/>
+
+  <circle cx="28" cy="92" r="7.5" fill="#7C3AED" filter="url(#neuron-glow)"/>
+  <circle cx="28" cy="92" r="3.5" fill="#FFFFFF"/>
+
+  <circle cx="92" cy="28" r="7.5" fill="#0EA5E9" filter="url(#neuron-glow)"/>
+  <circle cx="92" cy="28" r="3.5" fill="#FFFFFF"/>
+
+  <circle cx="92" cy="92" r="7.5" fill="#10B981" filter="url(#neuron-glow)"/>
+  <circle cx="92" cy="92" r="3.5" fill="#FFFFFF"/>
+
+  <!-- Central Synaptic Nucleus (Soma) -->
+  <circle cx="60" cy="60" r="11" fill="#09090B" stroke="url(#neuron-mark-grad)" stroke-width="2.5"/>
+  <circle cx="60" cy="60" r="5.5" fill="#38BDF8" filter="url(#neuron-glow)"/>
+  <circle cx="60" cy="60" r="2.2" fill="#FFFFFF"/>
+</svg>

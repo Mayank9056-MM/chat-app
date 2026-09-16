@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
+import { NeuronMark } from "@/components/brand";
 
 const SignInPage = () => {
   return (
@@ -11,14 +12,8 @@ const SignInPage = () => {
 
         {/* Logo + wordmark */}
         <div className="flex flex-col items-center gap-y-4 mb-8">
-          <div className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-white/5 border border-white/10 shadow-lg shadow-black/30">
-            <Image
-              src="/logo.svg"
-              alt="Neuron logo"
-              width={32}
-              height={32}
-              className="object-contain"
-            />
+          <div className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-white/5 border border-white/10 shadow-lg shadow-black/30 group">
+            <NeuronMark size={36} animated />
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-white">
