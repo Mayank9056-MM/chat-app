@@ -159,9 +159,9 @@ const defaultGetThinkingMessage = (isStreaming: boolean, duration?: number) => {
     return <Shimmer duration={1}>Thinking...</Shimmer>;
   }
   if (duration === undefined) {
-    return <p>Thought for a few seconds</p>;
+    return <span>Thought for a few seconds</span>;
   }
-  return <p>Thought for {duration} seconds</p>;
+  return <span>Thought for {duration} seconds</span>;
 };
 
 export const ReasoningTrigger = memo(
@@ -176,18 +176,20 @@ export const ReasoningTrigger = memo(
     return (
       <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground",
+          "flex w-full items-center gap-2.5 text-muted-foreground text-xs font-mono transition-colors hover:text-foreground select-none cursor-pointer py-1 px-1",
           className
         )}
         {...props}
       >
         {children ?? (
           <>
-            <BrainIcon className="size-4" />
-            {getThinkingMessage(isStreaming, duration)}
+            <BrainIcon className={cn("size-3.5 shrink-0", isStreaming && "text-primary animate-pulse")} />
+            <span className="flex-1 text-left truncate">
+              {getThinkingMessage(isStreaming, duration)}
+            </span>
             <ChevronDownIcon
               className={cn(
-                "size-4 transition-transform",
+                "size-3.5 shrink-0 text-muted-foreground/70 transition-transform duration-200",
                 isOpen ? "rotate-180" : "rotate-0"
               )}
             />
@@ -210,13 +212,26 @@ export const ReasoningContent = memo(
   ({ className, children, ...props }: ReasoningContentProps) => (
     <CollapsibleContent
       className={cn(
-        "mt-4 text-sm",
-        "data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-muted-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in",
+        "mt-2.5 pt-3 border-t border-border/50 text-xs font-mono leading-relaxed text-muted-foreground/90 outline-none overflow-hidden",
+        "data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 data-[state=closed]:animate-out data-[state=open]:animate-in",
+        // Explicit list styles with generous indent & marker placement
+        "[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-2 [&_ul]:space-y-1.5 [&_ul_ul]:pl-5 [&_ul_ul]:my-1",
+        "[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-2 [&_ol]:space-y-1.5 [&_ol_ol]:pl-5 [&_ol_ol]:my-1",
+        "[&_li]:pl-1.5 [&_li]:leading-relaxed [&_li::marker]:text-muted-foreground/70",
+        // Paragraphs & headings
+        "[&_p]:my-2 [&_p]:leading-relaxed [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
+        "[&_h1]:text-sm [&_h1]:font-semibold [&_h1]:my-2 [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:my-1.5",
+        // Preformatted code & inline code inside reasoning
+        "[&_pre]:my-2 [&_pre]:p-2.5 [&_pre]:rounded-md [&_pre]:bg-secondary/60 [&_pre]:overflow-x-auto",
+        "[&_code]:text-[11px] [&_code]:font-mono [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-muted/70",
+        "[&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2",
         className
       )}
       {...props}
     >
-      <Streamdown plugins={streamdownPlugins}>{children}</Streamdown>
+      <div className="pl-1.5 sm:pl-2 pr-1">
+        <Streamdown plugins={streamdownPlugins}>{children}</Streamdown>
+      </div>
     </CollapsibleContent>
   )
 );
