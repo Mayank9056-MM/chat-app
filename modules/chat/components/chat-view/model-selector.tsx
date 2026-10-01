@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ChevronDown, Info, Search, Sparkles, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Check, ChevronDown, Cpu, Info, Layers, Search, Sparkles, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { AIModel } from "@/types/ai-model";
+import { cn } from "@/lib/utils";
 
 interface ModelSelectorProps {
   models: AIModel[] | undefined;
@@ -39,12 +39,16 @@ export function ModelSelector({
   const [selectedForDetails, setSelectedForDetails] = useState<AIModel | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const selectedModel = models?.find((m) => m.id === selectedModelId);
+  const selectedModel = useMemo(
+    () => models?.find((m) => m.id === selectedModelId),
+    [models, selectedModelId]
+  );
 
   const formatContextLength = (length: number) => {
+    if (!length) return "N/A";
     if (length >= 1000000) return `${(length / 1000000).toFixed(1)}M`;
     if (length >= 1000) return `${(length / 1000).toFixed(0)}K`;
-    return length?.toString();
+    return length.toString();
   };
 
   const isFreeModel = (model: AIModel) =>
@@ -52,21 +56,73 @@ export function ModelSelector({
     model?.pricing?.completion === "0" &&
     model?.pricing?.request === "0";
 
+  const isMultimodal = (model: AIModel) =>
+    model?.architecture?.input_modalities?.includes("image") ||
+    model?.architecture?.modality?.toLowerCase().includes("image") ||
+    model?.architecture?.modality?.toLowerCase().includes("multimodal");
+
   const openModelDetails = (model: AIModel, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedForDetails(model);
     setDetailsOpen(true);
   };
 
-  const filteredModels = models?.filter((model) => {
+  const filteredModels = useMemo(() => {
+    if (!models) return [];
+    if (!searchQuery.trim()) return models;
+
     const query = searchQuery.toLowerCase();
-    return (
-      model.name.toLowerCase().includes(query) ||
-      model.description.toLowerCase().includes(query) ||
-      model.id.toLowerCase().includes(query) ||
-      model.architecture.modality.toLowerCase().includes(query)
-    );
-  });
+    return models.filter((model) => {
+      return (
+        model.name.toLowerCase().includes(query) ||
+        model.description.toLowerCase().includes(query) ||
+        model.id.toLowerCase().includes(query) ||
+        model.architecture.modality.toLowerCase().includes(query)
+      );
+    });
+  }, [models, searchQuery]);
+
+  // Group by Context Size & Capabilities (Large Context, Extended, Standard)
+  const groupedModels = useMemo(() => {
+    const groups: {
+      id: string;
+      label: string;
+      icon: React.ReactNode;
+      models: AIModel[];
+    }[] = [
+      {
+        id: "large",
+        label: "Large Context (≥ 128K)",
+        icon: <Layers className="h-3 w-3 text-cyan-500 dark:text-cyan-400" />,
+        models: [],
+      },
+      {
+        id: "extended",
+        label: "Extended Context (32K – 128K)",
+        icon: <Zap className="h-3 w-3 text-violet-500 dark:text-violet-400" />,
+        models: [],
+      },
+      {
+        id: "standard",
+        label: "Standard Context (< 32K)",
+        icon: <Cpu className="h-3 w-3 text-muted-foreground" />,
+        models: [],
+      },
+    ];
+
+    for (const model of filteredModels) {
+      const ctx = model.context_length || 0;
+      if (ctx >= 131072) {
+        groups[0].models.push(model);
+      } else if (ctx >= 32768) {
+        groups[1].models.push(model);
+      } else {
+        groups[2].models.push(model);
+      }
+    }
+
+    return groups.filter((g) => g.models.length > 0);
+  }, [filteredModels]);
 
   return (
     <>
@@ -78,67 +134,59 @@ export function ModelSelector({
             aria-expanded={open}
             aria-haspopup="listbox"
             className={cn(
-              "h-7 gap-1.5 px-2 rounded-lg text-xs font-medium",
-              "bg-white/[0.04] hover:bg-white/[0.08]",
-              "border border-white/[0.07] hover:border-white/[0.12]",
-              "text-zinc-400 hover:text-zinc-200",
+              "h-7 gap-1.5 px-2 rounded-md text-xs font-mono font-medium",
+              "bg-secondary hover:bg-muted",
+              "border border-border hover:border-violet-500/40",
+              "text-foreground",
               "transition-all duration-150",
-              // Constrain width on narrow screens; icon + short name stays readable
-              "max-w-[180px] sm:max-w-none",
-              open && "bg-white/[0.08] border-white/[0.12] text-zinc-200",
+              "max-w-[190px] sm:max-w-none shadow-xs",
+              open && "bg-muted border-violet-500/50",
               className,
             )}
           >
-            <Sparkles className="h-3 w-3 text-indigo-400 shrink-0" />
-            <span className="truncate max-w-[120px] sm:max-w-[160px]">
-              {selectedModel?.name ?? "Select model"}
+            <Sparkles className="h-3 w-3 text-violet-500 dark:text-violet-400 shrink-0" />
+            <span className="truncate max-w-[130px] sm:max-w-[170px]">
+              {selectedModel?.name || "Select model"}
             </span>
+            {selectedModel && (
+              <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                ({formatContextLength(selectedModel.context_length)})
+              </span>
+            )}
             <ChevronDown
               className={cn(
-                "h-3 w-3 shrink-0 text-zinc-600 transition-transform duration-150",
+                "h-3 w-3 shrink-0 text-muted-foreground transition-transform duration-150",
                 open && "rotate-180",
               )}
             />
           </Button>
         </PopoverTrigger>
 
-        {/*
-          On mobile (< sm) the popover takes nearly the full viewport width;
-          on desktop it's a fixed 420px panel.
-          align="start" keeps it left-anchored under the trigger.
-          We cap the list at 300px on mobile so it doesn't push off-screen.
-        */}
         <PopoverContent
           className={cn(
-            "w-[calc(100vw-2rem)] sm:w-[420px]",
-            "p-0 bg-zinc-900 border-white/[0.08]",
-            "shadow-2xl shadow-black/60 rounded-xl",
+            "w-[calc(100vw-2rem)] sm:w-[440px]",
+            "p-0 bg-popover border-border text-popover-foreground",
+            "shadow-2xl rounded-xl",
           )}
           align="start"
-          // Keep the popover on-screen even on 320px viewports
           avoidCollisions
           collisionPadding={16}
         >
-          {/* ── Search ── */}
-          <div className="p-2.5 border-b border-white/[0.06]">
+          {/* ── Search Bar ── */}
+          <div className="p-2 border-b border-border">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600 pointer-events-none" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <Input
-                placeholder="Search models…"
+                placeholder="Filter by capability, name, or context..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={cn(
-                  "h-8 pl-8 pr-7 text-xs rounded-lg",
-                  "bg-white/[0.04] border-white/[0.07]",
-                  "text-zinc-300 placeholder:text-zinc-600",
-                  "focus-visible:ring-1 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/30",
-                )}
+                className="h-7 pl-8 pr-7 text-xs rounded-md bg-secondary border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-violet-500"
                 autoFocus
-                aria-label="Search models"
+                aria-label="Filter models"
               />
               {searchQuery && (
                 <button
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 transition-colors p-0.5 rounded"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded"
                   onClick={() => setSearchQuery("")}
                   aria-label="Clear search"
                 >
@@ -148,219 +196,185 @@ export function ModelSelector({
             </div>
           </div>
 
-          {/* ── Model list ── */}
-          <ScrollArea className="h-[300px] sm:h-[360px]">
-            <div className="p-2" role="listbox" aria-label="Available models">
-              <div className="px-2 pb-1.5 pt-0.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-                Available · {filteredModels?.length ?? 0}
-              </div>
-
-              {filteredModels?.length === 0 ? (
-                <div className="py-10 text-center text-xs text-zinc-600">
+          {/* ── Grouped Model List ── */}
+          <ScrollArea className="h-[300px] sm:h-[350px]">
+            <div className="p-2 space-y-3" role="listbox" aria-label="Available AI models">
+              {filteredModels.length === 0 ? (
+                <div className="py-10 text-center text-xs text-muted-foreground font-mono">
                   No models match &ldquo;{searchQuery}&rdquo;
                 </div>
               ) : (
-                <div className="space-y-0.5">
-                  {filteredModels?.map((model) => (
-                    <div
-                      key={model.id}
-                      role="option"
-                      aria-selected={selectedModelId === model.id}
-                      className={cn(
-                        "group relative flex cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2.5 text-sm transition-colors duration-100",
-                        "hover:bg-white/[0.06] active:bg-white/[0.08]",
-                        selectedModelId === model.id
-                          ? "bg-indigo-500/10 hover:bg-indigo-500/15"
-                          : "",
-                      )}
-                      onClick={() => {
-                        onModelSelect(model.id);
-                        setOpen(false);
-                        setSearchQuery("");
-                      }}
-                    >
-                      {/* Check mark */}
-                      <div className="flex h-5 items-center mt-0.5 flex-shrink-0">
-                        <Check
-                          className={cn(
-                            "h-3.5 w-3.5 text-indigo-400 transition-opacity",
-                            selectedModelId === model.id ? "opacity-100" : "opacity-0",
-                          )}
-                        />
-                      </div>
-
-                      {/* Content — min-w-0 prevents long model names from overflowing */}
-                      <div className="flex-1 min-w-0 space-y-0.5">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span
-                            className={cn(
-                              "font-medium text-xs leading-none",
-                              selectedModelId === model.id
-                                ? "text-indigo-300"
-                                : "text-zinc-200",
-                            )}
-                          >
-                            {model.name}
-                          </span>
-                          {isFreeModel(model) && (
-                            <Badge className="h-3.5 px-1 text-[9px] bg-emerald-500/15 text-emerald-400 border-emerald-500/20 border rounded-sm font-semibold">
-                              FREE
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-zinc-500 line-clamp-1 leading-relaxed">
-                          {model.description}
-                        </p>
-                        <div className="flex items-center gap-2 text-[10px] text-zinc-700">
-                          <span>{formatContextLength(model.context_length)} ctx</span>
-                          <span className="text-zinc-800">·</span>
-                          <span className="capitalize">
-                            {model?.architecture?.modality?.replace("->", "→") ?? "N/A"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Info button — visible on hover/focus */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "h-6 w-6 p-0 shrink-0 rounded-md",
-                          "text-zinc-700 hover:text-zinc-300 hover:bg-white/[0.08]",
-                          "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
-                          "transition-all duration-150",
-                        )}
-                        onClick={(e) => openModelDetails(model, e)}
-                        aria-label={`View details for ${model.name}`}
-                      >
-                        <Info className="h-3.5 w-3.5" />
-                      </Button>
+                groupedModels.map((group) => (
+                  <div key={group.id} className="space-y-1">
+                    {/* Category Header */}
+                    <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-medium">
+                      {group.icon}
+                      <span>{group.label}</span>
+                      <span className="text-muted-foreground/60">({group.models.length})</span>
                     </div>
-                  ))}
-                </div>
+
+                    {/* Model Items */}
+                    <div className="space-y-0.5">
+                      {group.models.map((model) => {
+                        const isSelected = selectedModelId === model.id;
+
+                        return (
+                          <div
+                            key={model.id}
+                            role="option"
+                            aria-selected={isSelected}
+                            className={cn(
+                              "group relative flex cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors duration-100",
+                              "hover:bg-muted",
+                              isSelected
+                                ? "bg-violet-500/10 border border-violet-500/30 text-violet-700 dark:text-violet-300"
+                                : "border border-transparent",
+                            )}
+                            onClick={() => {
+                              onModelSelect(model.id);
+                              setOpen(false);
+                              setSearchQuery("");
+                            }}
+                          >
+                            {/* Check indicator */}
+                            <div className="flex h-4 items-center mt-0.5 shrink-0">
+                              <Check
+                                className={cn(
+                                  "h-3.5 w-3.5 text-violet-600 dark:text-violet-400 transition-opacity",
+                                  isSelected ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0 space-y-0.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span
+                                  className={cn(
+                                    "font-mono text-xs font-medium leading-none",
+                                    isSelected ? "text-violet-700 dark:text-violet-300" : "text-foreground",
+                                  )}
+                                >
+                                  {model.name}
+                                </span>
+
+                                {isFreeModel(model) && (
+                                  <Badge className="h-3.5 px-1 text-[9px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 border rounded font-mono">
+                                    FREE
+                                  </Badge>
+                                )}
+
+                                {isMultimodal(model) && (
+                                  <Badge className="h-3.5 px-1 text-[9px] bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/20 border rounded font-mono">
+                                    VISION
+                                  </Badge>
+                                )}
+                              </div>
+
+                              <p className="text-[11px] text-muted-foreground line-clamp-1 leading-relaxed">
+                                {model.description}
+                              </p>
+
+                              <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
+                                <span>{formatContextLength(model.context_length)} tokens</span>
+                                <span>·</span>
+                                <span>{model.architecture?.modality || "text"}</span>
+                              </div>
+                            </div>
+
+                            {/* Info Button */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 shrink-0 rounded text-muted-foreground hover:text-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                              onClick={(e) => openModelDetails(model, e)}
+                              aria-label={`View specs for ${model.name}`}
+                            >
+                              <Info className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </ScrollArea>
         </PopoverContent>
       </Popover>
 
-      {/* ── Model details dialog ── */}
+      {/* ── Model Specs Dialog ── */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent
           className={cn(
-            // Nearly full-width on mobile; capped at 512px on desktop
             "w-[calc(100vw-2rem)] max-w-lg",
-            "bg-zinc-900 border-white/[0.08] text-zinc-200",
-            "shadow-2xl shadow-black/60",
+            "bg-popover border-border text-popover-foreground",
+            "shadow-2xl",
           )}
         >
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-white">
-              <Sparkles className="h-4 w-4 text-indigo-400 flex-shrink-0" />
+            <DialogTitle className="flex items-center gap-2 text-foreground font-mono text-sm">
+              <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-400 shrink-0" />
               <span className="truncate">{selectedForDetails?.name}</span>
             </DialogTitle>
-            <DialogDescription className="text-zinc-500">
-              Model capabilities and pricing
+            <DialogDescription className="text-xs text-muted-foreground">
+              Technical specifications and capability parameters
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="h-[380px] sm:h-[420px] pr-4">
+          <ScrollArea className="h-[340px] pr-3">
             {selectedForDetails && (
-              <div className="space-y-5">
-
+              <div className="space-y-4 pt-1">
                 {/* Description */}
-                <p className="text-sm text-zinc-400 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   {selectedForDetails.description}
                 </p>
 
-                {/* Stats grid */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Specs Grid */}
+                <div className="grid grid-cols-2 gap-2.5">
                   {[
-                    { label: "Context length", value: `${formatContextLength(selectedForDetails.context_length)} tokens` },
-                    { label: "Max completion", value: `${formatContextLength(selectedForDetails.top_provider.max_completion_tokens)} tokens` },
-                    { label: "Modality", value: selectedForDetails.architecture.modality.replace("->", " → ") },
-                    { label: "Tokenizer", value: selectedForDetails.architecture.tokenizer },
+                    { label: "Context Window", value: `${formatContextLength(selectedForDetails.context_length)} tokens` },
+                    { label: "Max Completion", value: `${formatContextLength(selectedForDetails.top_provider?.max_completion_tokens || 0)} tokens` },
+                    { label: "Modality", value: selectedForDetails.architecture?.modality?.replace("->", " → ") || "text" },
+                    { label: "Tokenizer", value: selectedForDetails.architecture?.tokenizer || "standard" },
                   ].map((item) => (
-                    <div key={item.label} className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-3 space-y-1">
-                      <p className="text-[10px] text-zinc-600 uppercase tracking-wide">{item.label}</p>
-                      <p className="text-xs font-medium text-zinc-200 capitalize break-words">{item.value}</p>
+                    <div key={item.label} className="rounded-md bg-secondary border border-border p-2.5 space-y-0.5">
+                      <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">{item.label}</p>
+                      <p className="text-xs font-mono font-medium text-foreground break-words">{item.value}</p>
                     </div>
                   ))}
                 </div>
 
-                {/* Modalities */}
-                <div className="space-y-2.5">
-                  <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Modalities</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <p className="text-[10px] text-zinc-600">Input</p>
-                      <div className="flex flex-wrap gap-1">
-                        {selectedForDetails.architecture.input_modalities.map((m) => (
-                          <Badge key={m} className="text-[10px] bg-white/[0.05] text-zinc-400 border-white/[0.08] border rounded-md px-1.5">
-                            {m}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <p className="text-[10px] text-zinc-600">Output</p>
-                      <div className="flex flex-wrap gap-1">
-                        {selectedForDetails.architecture.output_modalities.map((m) => (
-                          <Badge key={m} className="text-[10px] bg-white/[0.05] text-zinc-400 border-white/[0.08] border rounded-md px-1.5">
-                            {m}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pricing */}
-                <div className="space-y-2.5">
-                  <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Pricing</p>
+                {/* Pricing / Free Indicator */}
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Pricing Tier</p>
                   {isFreeModel(selectedForDetails) ? (
-                    <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                      <Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-xs">FREE</Badge>
-                      <p className="text-xs text-zinc-500">This model is completely free to use</p>
+                    <div className="flex items-center gap-2 p-2.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                      <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-0 text-xs font-mono">FREE</Badge>
+                      <p className="text-xs text-muted-foreground">Zero token charge on OpenRouter</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                      {Object.entries(selectedForDetails.pricing).map(([key, value]) => {
-                        if (value === "0") return null;
-                        return (
-                          <div key={key} className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-3 space-y-1">
-                            <p className="text-[10px] text-zinc-600 uppercase tracking-wide capitalize">{key.replace("_", " ")}</p>
-                            <p className="text-xs font-medium text-zinc-200">${value}</p>
-                          </div>
-                        );
-                      })}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-md bg-secondary border border-border p-2">
+                        <p className="text-[10px] text-muted-foreground font-mono">Prompt</p>
+                        <p className="text-xs font-mono text-foreground">${selectedForDetails.pricing?.prompt}/M</p>
+                      </div>
+                      <div className="rounded-md bg-secondary border border-border p-2">
+                        <p className="text-[10px] text-muted-foreground font-mono">Completion</p>
+                        <p className="text-xs font-mono text-foreground">${selectedForDetails.pricing?.completion}/M</p>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Provider */}
-                <div className="flex items-center justify-between rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5">
-                  <span className="text-xs text-zinc-500">Content moderation</span>
-                  <Badge
-                    className={cn(
-                      "text-[10px] border rounded-md px-1.5",
-                      selectedForDetails.top_provider.is_moderated
-                        ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/20"
-                        : "bg-white/[0.05] text-zinc-500 border-white/[0.08]",
-                    )}
-                  >
-                    {selectedForDetails.top_provider.is_moderated ? "Enabled" : "Disabled"}
-                  </Badge>
-                </div>
-
-                {/* Model ID */}
-                <div className="space-y-1.5">
-                  <p className="text-[10px] text-zinc-600 uppercase tracking-wide">Model ID</p>
-                  <code className="block text-[11px] bg-black/30 border border-white/[0.06] text-zinc-400 px-3 py-2 rounded-lg break-all">
+                {/* Technical Model Identifier */}
+                <div className="space-y-1">
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Model ID</p>
+                  <code className="block text-[11px] font-mono bg-secondary border border-border text-violet-600 dark:text-violet-300 px-2.5 py-1.5 rounded-md break-all select-all">
                     {selectedForDetails.id}
                   </code>
                 </div>
-
               </div>
             )}
           </ScrollArea>
@@ -369,3 +383,5 @@ export function ModelSelector({
     </>
   );
 }
+
+export default ModelSelector;

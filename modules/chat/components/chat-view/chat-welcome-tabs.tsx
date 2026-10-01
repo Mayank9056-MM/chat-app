@@ -4,134 +4,111 @@ import React, { useState } from "react";
 import { CHAT_TAB_MESSAGE } from "../../constant";
 import { Button } from "@/components/ui/button";
 import { NeuronMark } from "@/components/brand";
+import { ArrowUpRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type WelcomeTabsProps = {
   userName: string;
   onMessageSelect: (message: string) => void;
 };
 
-const ChatWelcomeTabs = ({
-  userName = "John Doe",
+export const ChatWelcomeTabs = ({
+  userName = "Developer",
   onMessageSelect,
 }: WelcomeTabsProps) => {
   const [activeTab, setActiveTab] = useState(0);
 
-  const firstName = userName.slice(0, userName.indexOf(" ")) || userName;
+  const firstName = userName ? userName.split(" ")[0] : "Developer";
 
   return (
-    /*
-      Full-width container; horizontal padding via px-* responds to screen size.
-      We do NOT set a fixed height — the parent's flex centering handles vertical.
-    */
     <div className="w-full px-4 sm:px-6">
-      <div className="w-full max-w-2xl mx-auto space-y-6 sm:space-y-8">
+      <div className="w-full max-w-2xl mx-auto space-y-6">
 
         {/* ── Brand Badge & Greeting ── */}
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-zinc-400">
-            <NeuronMark size={15} animated glow={false} />
-            <span className="font-medium text-zinc-300">Neuron Workspace</span>
+        <div className="space-y-2.5">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-secondary border border-border text-xs text-muted-foreground">
+            <NeuronMark size={14} animated glow={false} />
+            <span className="font-mono text-foreground text-[11px]">Neuron Workspace</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white leading-tight">
-            Good to see you,{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            Welcome back,{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-indigo-400 to-cyan-500 dark:from-violet-400 dark:via-indigo-300 dark:to-cyan-400">
               {firstName}
             </span>
             .
           </h1>
-          <p className="text-sm text-zinc-500">
-            Pick a category below or type anything to get started.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Select a prompt category or type an instruction to start streaming.
           </p>
         </div>
 
-        {/* ── Tab pills ── */}
-        {/*
-          flex-wrap lets tabs reflow into multiple rows on very narrow screens
-          rather than overflowing. gap-2 keeps them breathable.
-          Each pill has a min-w that prevents single-character collapse.
-        */}
+        {/* ── Category Tabs ── */}
         <div
-          className="flex flex-wrap gap-2"
+          className="flex flex-wrap gap-1.5"
           role="tablist"
-          aria-label="Message categories"
+          aria-label="Prompt categories"
         >
-          {CHAT_TAB_MESSAGE.map((tab, index) => (
-            <Button
-              key={tab.tabName}
-              variant="ghost"
-              role="tab"
-              aria-selected={activeTab === index}
-              onClick={() => setActiveTab(index)}
-              className={`
-                h-8 px-3 gap-1.5 rounded-full text-xs font-medium
-                border transition-all duration-150
-                whitespace-nowrap
-                focus-visible:ring-1 focus-visible:ring-indigo-500/50
-                ${
-                  activeTab === index
-                    ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/20"
-                    : "bg-white/[0.03] border-white/[0.07] text-zinc-400 hover:bg-white/[0.07] hover:text-zinc-200 hover:border-white/[0.12]"
-                }
-              `}
-            >
-              <span className="opacity-80" aria-hidden="true">{tab.icon}</span>
-              {tab.tabName}
-            </Button>
-          ))}
+          {CHAT_TAB_MESSAGE.map((tab, index) => {
+            const isSelected = activeTab === index;
+
+            return (
+              <Button
+                key={tab.tabName}
+                variant="ghost"
+                role="tab"
+                aria-selected={isSelected}
+                onClick={() => setActiveTab(index)}
+                className={cn(
+                  "h-7 px-2.5 gap-1.5 rounded-md text-xs font-medium border transition-all duration-150 whitespace-nowrap",
+                  isSelected
+                    ? "bg-violet-500/15 border-violet-500/30 text-violet-700 dark:text-violet-300 shadow-xs"
+                    : "bg-secondary border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <span className="opacity-70 text-violet-500 dark:text-violet-400" aria-hidden="true">{tab.icon}</span>
+                {tab.tabName}
+              </Button>
+            );
+          })}
         </div>
 
-        {/* ── Message suggestions ── */}
-        {/*
-          min-h preserves vertical rhythm when tab content has fewer items.
-          On very small screens the list is still readable because each item
-          gets its own row with generous touch target (py-3).
-        */}
+        {/* ── Suggestion Cards ── */}
         <div
-          className="w-full min-h-[200px] sm:min-h-[220px]"
+          className="w-full min-h-[180px]"
           role="tabpanel"
           aria-label={`${CHAT_TAB_MESSAGE[activeTab].tabName} suggestions`}
         >
-          <ul className="divide-y divide-white/[0.05]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {CHAT_TAB_MESSAGE[activeTab].messages.map((msg, index) => (
-              <li key={index}>
-                <button
-                  onClick={() => onMessageSelect(msg)}
-                  className="
-                    group w-full text-left py-3 px-1
-                    text-sm text-zinc-400
-                    hover:text-white
-                    active:text-white
-                    transition-colors duration-150
-                    flex items-start justify-between gap-4
-                    focus-visible:outline-none focus-visible:text-white
-                    min-w-0
-                  "
-                >
-                  {/*
-                    min-w-0 + break-words prevent a very long suggestion from
-                    overflowing its container at 320px.
-                  */}
-                  <span className="min-w-0 break-words">{msg}</span>
+              <button
+                key={index}
+                onClick={() => onMessageSelect(msg)}
+                className="
+                  group text-left p-3 rounded-lg
+                  bg-card hover:bg-secondary
+                  border border-border hover:border-violet-500/40
+                  transition-all duration-150
+                  flex items-start justify-between gap-3
+                  focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet-500
+                  min-w-0 shadow-xs
+                "
+              >
+                <span className="text-xs text-foreground group-hover:text-primary leading-relaxed line-clamp-2">
+                  {msg}
+                </span>
 
-                  {/* Arrow hint — flex-shrink-0 so it never wraps */}
-                  <span
-                    className="
-                      flex-shrink-0 mt-0.5
-                      opacity-0 group-hover:opacity-100
-                      group-focus-visible:opacity-100
-                      transition-opacity duration-150
-                      text-zinc-600 group-hover:text-indigo-400
-                      text-base leading-none
-                    "
-                    aria-hidden="true"
-                  >
-                    ↗
-                  </span>
-                </button>
-              </li>
+                <ArrowUpRight
+                  className="
+                    h-3.5 w-3.5 shrink-0 text-muted-foreground
+                    group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-150
+                    mt-0.5
+                  "
+                  aria-hidden="true"
+                />
+              </button>
             ))}
-          </ul>
+          </div>
         </div>
 
       </div>
