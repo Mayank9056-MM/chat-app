@@ -1,27 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
   <defs>
-    <linearGradient id="fav-grad" x1="4" y1="28" x2="28" y2="4" gradientUnits="userSpaceOnUse">
+    <linearGradient id="neuron-fav-grad" x1="4" y1="28" x2="28" y2="4" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#8B5CF6"/>
-      <stop offset="40%" stop-color="#6366F1"/>
-      <stop offset="80%" stop-color="#0EA5E9"/>
-      <stop offset="100%" stop-color="#10B981"/>
+      <stop offset="45%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
     </linearGradient>
   </defs>
 
-  <!-- Dark container background for browser tab contrast -->
-  <rect width="32" height="32" rx="7" fill="#09090B"/>
-  <rect width="32" height="32" rx="7" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+  <!-- High-contrast badge container ensuring visibility on both dark and light browser tabs -->
+  <rect width="32" height="32" rx="7" fill="#0D0D12"/>
+  <rect width="32" height="32" rx="7" stroke="#8B5CF6" stroke-width="1.2" stroke-opacity="0.6"/>
 
-  <!-- Bold N paths -->
-  <path d="M8 24 V8 L24 24 V8" stroke="url(#fav-grad)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-  
-  <!-- Highlight dots -->
-  <circle cx="8" cy="8" r="2.2" fill="#8B5CF6"/>
-  <circle cx="8" cy="8" r="1" fill="#FFFFFF"/>
-  <circle cx="24" cy="24" r="2.2" fill="#10B981"/>
-  <circle cx="24" cy="24" r="1" fill="#FFFFFF"/>
+  <!-- Synaptic 'N' Neural Conduit -->
+  <path d="M8.5 23.5 V8.5 L23.5 23.5 V8.5" stroke="url(#neuron-fav-grad)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
 
-  <!-- Center core -->
-  <circle cx="16" cy="16" r="3" fill="#09090B" stroke="url(#fav-grad)" stroke-width="1.2"/>
-  <circle cx="16" cy="16" r="1.4" fill="#38BDF8"/>
+  <!-- Core White Light Rails for high-DPI and low-res legibility -->
+  <path d="M8.5 21 V11" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" opacity="0.9"/>
+  <path d="M11 11 L21 21" stroke="#FFFFFF" stroke-width="1.1" stroke-linecap="round" opacity="0.95"/>
+  <path d="M23.5 21 V11" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" opacity="0.9"/>
+
+  <!-- Synaptic Ranvier Nodes -->
+  <circle cx="8.5" cy="8.5" r="2.2" fill="#8B5CF6"/>
+  <circle cx="8.5" cy="8.5" r="1" fill="#FFFFFF"/>
+  <circle cx="23.5" cy="23.5" r="2.2" fill="#22D3EE"/>
+  <circle cx="23.5" cy="23.5" r="1" fill="#FFFFFF"/>
+
+  <!-- Central Soma Nucleus -->
+  <circle cx="16" cy="16" r="3" fill="#0D0D12" stroke="#22D3EE" stroke-width="1.2"/>
+  <circle cx="16" cy="16" r="1.4" fill="#22D3EE"/>
+  <circle cx="16" cy="16" r="0.6" fill="#FFFFFF"/>
 </svg>

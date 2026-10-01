@@ -16,7 +16,7 @@ export interface NeuronMarkProps extends React.SVGProps<SVGSVGElement> {
  * Represents a synaptic neural network node topology forming the letter 'N':
  * - Continuous high-energy conduits with Ranvier synaptic terminals
  * - Central luminous Soma (nucleus) representing cognitive synthesis
- * - Subtle gradient transition from electric violet through indigo to cyan & mint
+ * - Strict 135deg gradient: #8B5CF6 (Violet) -> #6366F1 (Indigo) -> #22D3EE (Cyan)
  */
 export const NeuronMark = ({
   size = 32,
@@ -50,7 +50,7 @@ export const NeuronMark = ({
       {...props}
     >
       <defs>
-        {/* Primary flow: Violet -> Indigo -> Electric Blue -> Mint */}
+        {/* Brand 135deg flow: Violet -> Indigo -> Cyan */}
         <linearGradient
           id={flowGradId}
           x1="20"
@@ -60,9 +60,8 @@ export const NeuronMark = ({
           gradientUnits="userSpaceOnUse"
         >
           <stop offset="0%" stopColor="#8B5CF6" />
-          <stop offset="35%" stopColor="#6366F1" />
-          <stop offset="70%" stopColor="#0EA5E9" />
-          <stop offset="100%" stopColor="#10B981" />
+          <stop offset="45%" stopColor="#6366F1" />
+          <stop offset="100%" stopColor="#22D3EE" />
         </linearGradient>
 
         {/* Counter-axon gradient */}
@@ -74,9 +73,9 @@ export const NeuronMark = ({
           y2="96"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor="#C084FC" />
-          <stop offset="50%" stopColor="#38BDF8" />
-          <stop offset="100%" stopColor="#34D399" />
+          <stop offset="0%" stopColor="#A78BFA" />
+          <stop offset="50%" stopColor="#6366F1" />
+          <stop offset="100%" stopColor="#22D3EE" />
         </linearGradient>
 
         {/* Ambient aura glow */}
@@ -87,21 +86,21 @@ export const NeuronMark = ({
           r="36"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.32" />
-          <stop offset="60%" stopColor="#6366F1" stopOpacity="0.12" />
+          <stop offset="0%" stopColor="#22D3EE" stopOpacity="0.25" />
+          <stop offset="50%" stopColor="#6366F1" stopOpacity="0.10" />
           <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
         </radialGradient>
 
         {/* Phosphor glow filter */}
         <filter
           id={glowFilterId}
-          x="-35%"
-          y="-35%"
-          width="170%"
-          height="170%"
+          x="-30%"
+          y="-30%"
+          width="160%"
+          height="160%"
           filterUnits="userSpaceOnUse"
         >
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -109,14 +108,14 @@ export const NeuronMark = ({
         </filter>
       </defs>
 
-      {/* Ambient background aura */}
+      {/* Ambient background aura (restrained) */}
       {glow && (
         <circle
           cx="60"
           cy="60"
           r="36"
           fill={`url(#${auraGradId})`}
-          className={cn(animated && "animate-pulse")}
+          className={cn(animated && "animate-pulse motion-reduce:hidden")}
         />
       )}
 
@@ -124,7 +123,7 @@ export const NeuronMark = ({
       <path
         d="M28 92 L28 28 L92 92 L92 28"
         stroke="rgba(255,255,255,0.06)"
-        strokeWidth="11"
+        strokeWidth="10"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -134,50 +133,50 @@ export const NeuronMark = ({
         x2="92"
         y2="28"
         stroke={`url(#${pulseGradId})`}
-        strokeWidth="1.8"
+        strokeWidth="1.5"
         strokeDasharray="3 4"
-        opacity="0.55"
+        opacity="0.6"
       />
 
       {/* Main Neural Conduits forming 'N' */}
       <path
         d="M28 92 V28"
         stroke={`url(#${flowGradId})`}
-        strokeWidth="8.5"
+        strokeWidth="8"
         strokeLinecap="round"
       />
       <path
         d="M28 28 L92 92"
         stroke={`url(#${flowGradId})`}
-        strokeWidth="8.5"
+        strokeWidth="8"
         strokeLinecap="round"
       />
       <path
         d="M92 92 V28"
         stroke={`url(#${flowGradId})`}
-        strokeWidth="8.5"
+        strokeWidth="8"
         strokeLinecap="round"
       />
 
-      {/* High-Energy Core Rails (White-hot photon channels) */}
+      {/* High-Energy Core Rails */}
       <path
         d="M28 84 V36"
         stroke="#FFFFFF"
-        strokeWidth="2.2"
+        strokeWidth="2"
         strokeLinecap="round"
         opacity="0.85"
       />
       <path
         d="M34 34 L86 86"
         stroke="#FFFFFF"
-        strokeWidth="2.4"
+        strokeWidth="2.2"
         strokeLinecap="round"
-        opacity="0.95"
+        opacity="0.9"
       />
       <path
         d="M92 84 V36"
         stroke="#FFFFFF"
-        strokeWidth="2.2"
+        strokeWidth="2"
         strokeLinecap="round"
         opacity="0.85"
       />
@@ -186,57 +185,57 @@ export const NeuronMark = ({
       <circle
         cx="28"
         cy="28"
-        r="7.5"
+        r="6.5"
         fill="#8B5CF6"
         filter={`url(#${glowFilterId})`}
       />
-      <circle cx="28" cy="28" r="3.5" fill="#FFFFFF" />
+      <circle cx="28" cy="28" r="3" fill="#FFFFFF" />
 
       <circle
         cx="28"
         cy="92"
-        r="7.5"
+        r="6.5"
         fill="#7C3AED"
         filter={`url(#${glowFilterId})`}
       />
-      <circle cx="28" cy="92" r="3.5" fill="#FFFFFF" />
+      <circle cx="28" cy="92" r="3" fill="#FFFFFF" />
 
       <circle
         cx="92"
         cy="28"
-        r="7.5"
-        fill="#0EA5E9"
+        r="6.5"
+        fill="#6366F1"
         filter={`url(#${glowFilterId})`}
       />
-      <circle cx="92" cy="28" r="3.5" fill="#FFFFFF" />
+      <circle cx="92" cy="28" r="3" fill="#FFFFFF" />
 
       <circle
         cx="92"
         cy="92"
-        r="7.5"
-        fill="#10B981"
+        r="6.5"
+        fill="#22D3EE"
         filter={`url(#${glowFilterId})`}
       />
-      <circle cx="92" cy="92" r="3.5" fill="#FFFFFF" />
+      <circle cx="92" cy="92" r="3" fill="#FFFFFF" />
 
-      {/* Central Synaptic Nucleus (Soma - Nexus of Multi-Model Reasoning) */}
+      {/* Central Synaptic Nucleus (Soma - Multi-Model Synthesis) */}
       <circle
         cx="60"
         cy="60"
-        r="11"
-        fill="#09090B"
+        r="10"
+        fill="#0D0D12"
         stroke={`url(#${flowGradId})`}
-        strokeWidth="2.5"
+        strokeWidth="2.2"
       />
       <circle
         cx="60"
         cy="60"
-        r="5.5"
-        fill="#38BDF8"
+        r="5"
+        fill="#22D3EE"
         filter={`url(#${glowFilterId})`}
         className={cn(animated && "transition-transform duration-300 group-hover:scale-125")}
       />
-      <circle cx="60" cy="60" r="2.2" fill="#FFFFFF" />
+      <circle cx="60" cy="60" r="2" fill="#FFFFFF" />
     </svg>
   );
 };
