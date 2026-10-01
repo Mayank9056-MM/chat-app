@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import { useDeleteChat } from "@/modules/chat/hooks/use-chats";
 import Modal from "./ui/modal";
 import { toast } from "sonner";
@@ -10,45 +11,46 @@ interface DeleteChatModalProps {
   chatId: string;
 }
 
-const DeleteChatModal = ({
+export const DeleteChatModal = ({
   isModalOpen,
   setIsModalOpen,
   chatId,
 }: DeleteChatModalProps) => {
+  const router = useRouter();
+  const pathName = usePathname();
   const { mutateAsync, isPending } = useDeleteChat(chatId);
 
   const handleDelete = async () => {
     try {
       await mutateAsync();
-      toast.success("Chat deleted successfully");
+      toast.success("Conversation deleted");
       setIsModalOpen(false);
+
+      // If the user deleted the active conversation they are viewing, redirect to home
+      if (pathName === `/chat/${chatId}`) {
+        router.push("/");
+      }
     } catch (error) {
       console.error("Failed to delete chat:", error);
+      toast.error("Failed to delete conversation");
     }
   };
 
   return (
     <Modal
-      title="Delete Chat"
-      description="Are you sure you want to delete this chat? This action cannot be undone."
+      title="Delete Conversation"
+      description="Are you sure you want to permanently delete this conversation?"
       isOpen={isModalOpen}
       onClose={() => setIsModalOpen(false)}
       onSubmit={handleDelete}
-      submitText={isPending ? "Deleting…" : "Delete"}
+      submitText={isPending ? "Deleting..." : "Delete"}
       submitVariant="destructive"
-      size={""}
+      size=""
     >
-      {/*
-        Slightly warmer tone than plain zinc — red-400/10 tint reinforces the
-        destructive nature without being alarming. The icon + text pairing gives
-        the warning more weight on small screens where the modal title may be
-        truncated.
-      */}
-      <div className="rounded-lg bg-red-500/[0.06] border border-red-500/[0.12] px-3.5 py-3">
-        <p className="text-sm text-zinc-400 leading-relaxed">
-          All messages and data in this chat will be{" "}
-          <span className="text-zinc-300 font-medium">permanently removed</span>{" "}
-          and cannot be recovered.
+      <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-3.5 py-3">
+        <p className="text-xs text-zinc-300 leading-relaxed">
+          All messages and thinking traces in this session will be{" "}
+          <span className="text-red-400 font-medium">permanently removed</span>.
         </p>
       </div>
     </Modal>

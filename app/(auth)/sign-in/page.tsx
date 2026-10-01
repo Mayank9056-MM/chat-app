@@ -1,111 +1,106 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
+
+import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { authClient } from "@/lib/auth-client";
 import { NeuronMark } from "@/components/brand";
 
 const SignInPage = () => {
+  const [loadingProvider, setLoadingProvider] = useState<"github" | "google" | null>(null);
+
+  const handleSignIn = async (provider: "github" | "google") => {
+    try {
+      setLoadingProvider(provider);
+      await authClient.signIn.social({
+        provider,
+        callbackURL: "/",
+      });
+    } catch (error) {
+      console.error("Sign in failed:", error);
+      setLoadingProvider(null);
+    }
+  };
+
   return (
     <section className="flex flex-col items-center justify-center min-h-screen px-4 py-16">
-      {/* Sign-in card */}
+      {/* Sign-in card container */}
       <div className="w-full max-w-sm">
 
-        {/* Logo + wordmark */}
-        <div className="flex flex-col items-center gap-y-4 mb-8">
-          <div className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-white/5 border border-white/10 shadow-lg shadow-black/30 group">
-            <NeuronMark size={36} animated />
-          </div>
+        {/* Brand Lockup */}
+        <div className="flex flex-col items-center gap-y-3 mb-8">
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet-500 rounded-xl">
+            <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-[#0D0D12] border border-[#23232D] shadow-xl shadow-black/40 group">
+              <NeuronMark size={28} animated />
+            </div>
+          </Link>
           <div className="text-center">
-            <h1 className="text-2xl font-semibold tracking-tight text-white">
-              Welcome to Neuron
+            <h1 className="text-xl font-bold tracking-tight text-white">
+              Sign in to Neuron
             </h1>
-            <p className="mt-1.5 text-sm text-zinc-400 leading-relaxed">
-              Sign in to get started — unlocks higher message limits.
+            <p className="mt-1 text-xs text-zinc-400">
+              Technical intelligence workspace for developers
             </p>
           </div>
         </div>
 
-        {/* Card surface */}
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.04] backdrop-blur-sm p-6 shadow-2xl shadow-black/40">
+        {/* Card Surface */}
+        <div className="rounded-xl border border-[#23232D] bg-[#0D0D12]/90 backdrop-blur-md p-6 shadow-2xl shadow-black/50">
 
-          {/* GitHub */}
+          {/* GitHub OAuth Button */}
           <Button
             variant="outline"
-            className="
-              w-full h-11 gap-x-2.5
-              bg-white/[0.06] hover:bg-white/[0.10]
-              border-white/[0.10] hover:border-white/[0.18]
-              text-zinc-100 hover:text-white
-              font-medium text-sm
-              rounded-xl
-              transition-all duration-150
-              focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950
-            "
-            onClick={() =>
-              authClient.signIn.social({
-                provider: "github",
-                callbackURL: "/",
-              })
-            }
+            disabled={loadingProvider !== null}
+            className="w-full h-10 gap-x-2.5 bg-[#13131A] hover:bg-[#1A1A24] border-[#23232D] hover:border-[#32323F] text-zinc-200 hover:text-white font-medium text-xs rounded-lg transition-all duration-150 focus-visible:ring-1 focus-visible:ring-violet-500"
+            onClick={() => handleSignIn("github")}
           >
-            <Image
-              src="/github.svg"
-              alt=""
-              width={18}
-              height={18}
-              className="opacity-90"
-            />
-            Continue with GitHub
+            {loadingProvider === "github" ? (
+              <Spinner className="h-4 w-4 text-zinc-400" />
+            ) : (
+              <Image
+                src="/github.svg"
+                alt=""
+                width={16}
+                height={16}
+                className="opacity-90"
+              />
+            )}
+            <span>{loadingProvider === "github" ? "Connecting to GitHub..." : "Continue with GitHub"}</span>
           </Button>
 
           {/* Divider */}
-          <div className="flex items-center gap-x-3 my-4" aria-hidden="true">
-            <div className="h-px flex-1 bg-white/[0.07]" />
-            <span className="text-xs text-zinc-600 font-medium">or</span>
-            <div className="h-px flex-1 bg-white/[0.07]" />
+          <div className="flex items-center gap-x-3 my-3.5" aria-hidden="true">
+            <div className="h-px flex-1 bg-[#23232D]" />
+            <span className="text-[11px] text-zinc-600 font-mono">or</span>
+            <div className="h-px flex-1 bg-[#23232D]" />
           </div>
 
-          {/* Google */}
+          {/* Google OAuth Button */}
           <Button
             variant="outline"
-            className="
-              w-full h-11 gap-x-2.5
-              bg-white/[0.06] hover:bg-white/[0.10]
-              border-white/[0.10] hover:border-white/[0.18]
-              text-zinc-100 hover:text-white
-              font-medium text-sm
-              rounded-xl
-              transition-all duration-150
-              focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950
-            "
-            onClick={() =>
-              authClient.signIn.social({
-                provider: "google",
-                callbackURL: "/",
-              })
-            }
+            disabled={loadingProvider !== null}
+            className="w-full h-10 gap-x-2.5 bg-[#13131A] hover:bg-[#1A1A24] border-[#23232D] hover:border-[#32323F] text-zinc-200 hover:text-white font-medium text-xs rounded-lg transition-all duration-150 focus-visible:ring-1 focus-visible:ring-violet-500"
+            onClick={() => handleSignIn("google")}
           >
-            <Image
-              src="/google.svg"
-              alt=""
-              width={18}
-              height={18}
-            />
-            Continue with Google
+            {loadingProvider === "google" ? (
+              <Spinner className="h-4 w-4 text-zinc-400" />
+            ) : (
+              <Image
+                src="/google.svg"
+                alt=""
+                width={16}
+                height={16}
+              />
+            )}
+            <span>{loadingProvider === "google" ? "Connecting to Google..." : "Continue with Google"}</span>
           </Button>
         </div>
 
-        {/* Footer note */}
-        <p className="mt-5 text-center text-xs text-zinc-600 leading-relaxed">
-          By signing in, you agree to our{' '}
-          <span className="text-zinc-500 underline underline-offset-2 decoration-zinc-600 hover:text-zinc-300 cursor-pointer transition-colors">
-            Terms
-          </span>{' '}
-          and{' '}
-          <span className="text-zinc-500 underline underline-offset-2 decoration-zinc-600 hover:text-zinc-300 cursor-pointer transition-colors">
-            Privacy Policy
-          </span>
-          .
+        {/* Footer Note */}
+        <p className="mt-4 text-center text-[11px] text-zinc-600 leading-relaxed">
+          By signing in, you access multi-model streaming with user-scoped persistence.
         </p>
       </div>
     </section>
