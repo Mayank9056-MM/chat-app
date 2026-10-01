@@ -1,42 +1,68 @@
-import Header from "@/components/header";
-import { requireAuth } from "@/modules/auth/actions";
-import { User } from "@/modules/auth/types";
-import ChatSidebar from "@/modules/chat/components/chat-sidebar";
 import React from "react";
+import Header from "@/components/header";
+import { currentUser } from "@/modules/auth/actions";
+import ChatSidebar from "@/modules/chat/components/chat-sidebar";
+import { NeuronLogo } from "@/components/brand";
+import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
-  const session = await requireAuth();
-  const user: User = session.user;
+  const user = await currentUser();
 
+  // If user is authenticated, render the full workspace shell
+  if (user) {
+    return (
+      <div className="flex h-dvh overflow-hidden bg-background text-foreground">
+        {/* Tablet (md:w-16) & Desktop (lg:w-60) Sidebar */}
+        <aside className="hidden md:flex shrink-0 h-full">
+          <ChatSidebar user={user} />
+        </aside>
+
+        {/* Main Workspace Area */}
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <Header user={user} />
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {children}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // If guest / unauthenticated, render the clean public shell
   return (
-     <div className="flex h-dvh overflow-hidden bg-zinc-950">
-      {/*
-        Desktop sidebar — hidden on mobile (< lg), always visible on lg+.
-        w-60 is fixed; flex-shrink-0 prevents the main area from compressing it.
-      */}
-      <aside className="hidden lg:flex flex-shrink-0 w-60 h-full">
-        <ChatSidebar user={user} />
-      </aside>
- 
-      {/*
-        Main column.
-        min-w-0 is critical: without it, flex children can overflow their
-        parent on narrow viewports.
-        overflow-hidden on the column itself clips any stray child overflow.
-      */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/*
-          Header receives the user so it can render a mobile menu button
-          that opens the sidebar sheet (see header.tsx).
-          We also pass `user` so the header can render the sheet with
-          <ChatSidebar> inside it.
-        */}
-        <Header user={user} />
- 
-        {/* Content area fills remaining height; children scroll internally */}
-        <div className="flex-1 min-h-0 overflow-hidden">
-          {children}
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      {/* Public Navbar */}
+      <header className="h-14 border-b border-border bg-background/80 backdrop-blur-md px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30">
+        <NeuronLogo variant="full" size="sm" href="/" />
+
+        <div className="flex items-center gap-3">
+          <ModeToggle />
+          <Button
+            asChild
+            size="sm"
+            className="h-8 px-3.5 rounded-lg text-xs font-medium bg-secondary hover:bg-secondary/80 border border-border text-foreground"
+          >
+            <Link href="/sign-in">
+              Sign In
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="sm"
+            className="h-8 px-3.5 rounded-lg text-xs font-medium bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white border border-violet-500/30"
+          >
+            <Link href="/sign-in">
+              Get Started
+            </Link>
+          </Button>
         </div>
+      </header>
+
+      {/* Public Content */}
+      <main className="flex-1">
+        {children}
       </main>
     </div>
   );

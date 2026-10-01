@@ -1,4 +1,5 @@
 import MessageViewWithForm from "@/modules/messages/messsage-view-form";
+import { requireAuth } from "@/modules/auth/actions";
 import React from "react";
 
 const ChatIdPage = async ({
@@ -6,6 +7,7 @@ const ChatIdPage = async ({
 }: {
   params: Promise<{ chatId: string }>;
 }) => {
+  await requireAuth();
   const { chatId } = await params;
 
   return <MessageViewWithForm chatId={chatId} />;

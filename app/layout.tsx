@@ -7,33 +7,27 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { Toaster } from "sonner";
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://chat-app-e478-psha64o3j-mayank9056-mms-projects.vercel.app";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chat-app-e478-psha64o3j-mayank9056-mms-projects.vercel.app"),
+  metadataBase: new URL(baseUrl),
 
   title: {
-    default: "Neuron — AI Workspace for Thinking, Research & Conversations",
+    default: "Neuron — Multi-Model AI Workspace for Developers",
     template: "%s | Neuron",
   },
 
   description:
-    "Neuron is a modern AI workspace that helps you think, research, learn, and create faster. Chat with advanced AI models, organize conversations, and boost productivity in one unified platform.",
+    "Neuron is a developer-focused, multi-model AI workspace for technical reasoning, code generation, and persistent conversation history across leading models.",
 
   keywords: [
     "Neuron AI",
-    "AI Chat",
-    "ChatGPT Alternative",
-    "Claude Alternative",
-    "AI Assistant",
-    "AI Workspace",
-    "AI Research Tool",
-    "Productivity AI",
-    "Multi Model AI",
-    "Artificial Intelligence",
-    "AI Conversations",
-    "OpenRouter",
-    "Next.js AI App",
-    "AI Platform",
-    "AI Knowledge Assistant",
+    "Developer AI Workspace",
+    "Multi-Model AI",
+    "OpenRouter Chat",
+    "Code Generation",
+    "Technical Reasoning",
+    "Next.js AI",
   ],
 
   authors: [
@@ -44,13 +38,11 @@ export const metadata: Metadata = {
 
   creator: "Mayank Mahajan",
   publisher: "Neuron",
-
-  category: "Technology",
+  category: "Developer Tools",
 
   robots: {
     index: true,
     follow: true,
-    nocache: false,
     googleBot: {
       index: true,
       follow: true,
@@ -63,31 +55,31 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://chat-app-e478-psha64o3j-mayank9056-mms-projects.vercel.app",
+    url: baseUrl,
     siteName: "Neuron",
-    title: "Neuron — AI Workspace for Thinking, Research & Conversations",
+    title: "Neuron — Multi-Model AI Workspace for Developers",
     description:
-      "A modern AI workspace built for research, learning, productivity, and intelligent conversations.",
+      "A restrained, developer-first AI workspace built for technical reasoning, coding, and multi-model exploration.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Neuron AI",
+        alt: "Neuron AI Workspace",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Neuron — AI Workspace",
+    title: "Neuron — Multi-Model AI Workspace",
     description:
-      "Chat, research, learn, and create with powerful AI models in one modern workspace.",
+      "A restrained, developer-first AI workspace built for technical reasoning and multi-model exploration.",
     images: ["/og-image.png"],
   },
 
   alternates: {
-    canonical: "https://chat-app-e478-psha64o3j-mayank9056-mms-projects.vercel.app",
+    canonical: baseUrl,
   },
 
   icons: {
@@ -138,16 +130,19 @@ export default function RootLayout({
       )}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-violet-500/30 selection:text-white">
         <QueryProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >
-            <TooltipProvider>{children}
-              <Toaster />
+            <TooltipProvider>
+              {children}
+              <Toaster
+                position="bottom-right"
+              />
             </TooltipProvider>
           </ThemeProvider>
         </QueryProvider>

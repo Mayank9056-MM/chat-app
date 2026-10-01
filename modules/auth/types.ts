@@ -12,6 +12,9 @@ export type UserButtonProps = {
   size?: "sm" | "md" | "lg";
   showEmail?: boolean;
   showMemberSince?: boolean;
+  collapsed?: boolean;
+  showDetails?: boolean;
+  className?: string;
 };
 
 export type User = {
